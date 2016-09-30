@@ -19,7 +19,7 @@ class BlackOutEstimator(Estimator):
             raise ValueError("samples must be set")
         if q is None:
             raise ValueError("target word weight must be provided")
-        domain = tf.matmul(tf.transpose(x), h)
+        domain = tf.matmul(x, tf.transpose(h))
         sample_partition= tf.mul(tf.exp(tf.matmul(samples, h)), weights)
         normalizor = tf.exp(domain)*q + tf.reduce_sum(sample_partition, 1)
         loss = domain - tf.log(q) + tf.reduce_sum(tf.log(normalizor-sample_partition))
