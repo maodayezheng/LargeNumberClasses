@@ -105,8 +105,6 @@ def predict_next_word(params):
             loss += sampler.loss(targets, state, sample_vec)
             '''
 
-
-    likelihood_approximate = sampler.likelihood()
     likelihood_exact = None
 
     l2 = lamb * (cell.l2_regular())

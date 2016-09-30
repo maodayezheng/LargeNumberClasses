@@ -2,7 +2,7 @@ import tensorflow as tf
 
 
 class EmbeddingLayer(object):
-    def __init__(self, name, num_class, dim):
+    def __init__(self, num_class, dim, name):
         """
         The constructor of Embedding layer
 

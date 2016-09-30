@@ -1,5 +1,5 @@
 class Sampler(object):
-    def __init__(self, num_classes, num_samples, proposed_dist, unique=True):
+    def __init__(self, num_classes, num_samples, proposed_dist= None, unique=True):
         """
         The constructor of Sampler
 

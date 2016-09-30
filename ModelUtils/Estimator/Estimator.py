@@ -3,18 +3,14 @@ from ModelUtils.Sampler import Sampler
 
 
 class Estimator(object):
-    def __init__(self, sampler, embedding_layer):
+    def __init__(self, sampler):
         """
         The constructor of estimator
 
         @Param sampler: An instance of Sampler
         @Param embedding_layer: The embedding_layer for looking up word vector
         """
-        if sampler is not Sampler:
-            raise Exception("Invalid argument type {}".format(type(sampler)))
-
         self.sampler_ = sampler
-        self.embedding_ = embedding_layer
         self.weights_ = None
         self.samples_ = None
 
@@ -36,9 +32,9 @@ class Estimator(object):
         """
         raise Exception("Can not call abstract method likelihood in Estimator")
 
-    def set_samples(self, target, num_targets):
+    def draw_samples(self, target, num_targets):
         """
-        Set sample set and sample weights for approximation
+        draw sample set and sample weights for approximation
 
         @Param target: the target words or target batch
         @Param num_targets: the length of target words or target batch
@@ -48,9 +44,10 @@ class Estimator(object):
         @Return sample_prob: The probability of sample occurrence
         """
         samples, target_prob, sample_prob = self.sampler_.draw_sample(target, num_targets)
-        self.samples_ = self.embedding_(samples)
+        return samples, target_prob, sample_prob
 
-        return samples, target_prob, target_prob
+    def set_sample(self, samples):
+        self.samples_ = samples
 
     def get_samples(self):
         return self.samples_

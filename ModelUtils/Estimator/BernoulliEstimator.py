@@ -20,7 +20,7 @@ class BernoulliEstimator(Estimator):
         if q is None:
             raise ValueError("target word weight must be provided")
 
-        domain = tf.matmul(x, h)
+        domain = tf.matmul(tf.transpose(x), h)
         normalizor = tf.matmul(tf.exp(tf.mul(samples, h)), weights) + tf.exp(domain) * q
         return tf.reduce_mean(domain - tf.log(normalizor))
 

@@ -11,7 +11,7 @@ class AlexEstimator(Estimator):
             @Param h: This is usually the output of neural network
             @Param q: The Weight of target
         """
-        weights = self.get_sample_weights()
+        weights = tf.expand_dims(self.get_sample_weights(), 0)
         if weights is None:
             raise ValueError("sample weights must be set")
         samples = self.get_samples()
@@ -20,8 +20,8 @@ class AlexEstimator(Estimator):
         if q is None:
             raise ValueError("target word weight must be provided")
 
-        domain = tf.matmul(x, h)
-        normalizor = tf.matmul(tf.exp(tf.mul(samples, h)), weights) + tf.exp(domain) * q
+        domain = tf.matmul(tf.transpose(x), h)
+        normalizor = tf.matmul(weights, tf.exp(tf.matmul(samples, tf.transpose(h)))) + tf.exp(domain) * q
         return tf.reduce_mean(domain - tf.log(normalizor)+tf.log(q))
 
     def likelihood(self, x, h, q=None):

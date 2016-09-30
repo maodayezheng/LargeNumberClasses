@@ -1,5 +1,5 @@
 import tensorflow as tf
-from ModelUtils.Sampler import Sampler
+from Sampler import Sampler
 
 
 class UnigramSampler(Sampler):
