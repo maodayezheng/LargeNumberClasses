@@ -2,18 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8cf0245c-60d7-4f68-9a31-112fac1be6a4" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Experiments.py" afterPath="$PROJECT_DIR$/Experiments.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ModelUtils/EmbeddingLayer.py" afterPath="$PROJECT_DIR$/ModelUtils/EmbeddingLayer.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ModelUtils/Estimator/AlexEstimator.py" afterPath="$PROJECT_DIR$/ModelUtils/Estimator/AlexEstimator.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ModelUtils/Estimator/BernoulliEstimator.py" afterPath="$PROJECT_DIR$/ModelUtils/Estimator/BernoulliEstimator.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ModelUtils/Estimator/BlackOutEstimator.py" afterPath="$PROJECT_DIR$/ModelUtils/Estimator/BlackOutEstimator.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ModelUtils/Estimator/Estimator.py" afterPath="$PROJECT_DIR$/ModelUtils/Estimator/Estimator.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ModelUtils/Estimator/ImportanceEstimator.py" afterPath="$PROJECT_DIR$/ModelUtils/Estimator/ImportanceEstimator.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ModelUtils/Sampler/Sampler.py" afterPath="$PROJECT_DIR$/ModelUtils/Sampler/Sampler.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ModelUtils/Sampler/UniformSampler.py" afterPath="$PROJECT_DIR$/ModelUtils/Sampler/UniformSampler.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ModelUtils/Sampler/UnigramSampler.py" afterPath="$PROJECT_DIR$/ModelUtils/Sampler/UnigramSampler.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Test/UnitTests.py" afterPath="$PROJECT_DIR$/Test/UnitTests.py" />
     </list>
     <ignored path="LargeNumberClasses.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -58,11 +49,51 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="AlexEstimator.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="AlexEstimator.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ModelUtils/Estimator/AlexEstimator.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="330">
-              <caret line="23" column="40" selection-start-line="23" selection-start-column="40" selection-end-line="23" selection-end-column="40" />
+              <caret line="23" column="56" selection-start-line="23" selection-start-column="50" selection-end-line="23" selection-end-column="56" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ImportanceEstimator.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/ModelUtils/Estimator/ImportanceEstimator.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="285">
+              <caret line="20" column="47" selection-start-line="20" selection-start-column="47" selection-end-line="20" selection-end-column="47" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="BlackOutEstimator.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/ModelUtils/Estimator/BlackOutEstimator.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="315">
+              <caret line="22" column="49" selection-start-line="22" selection-start-column="49" selection-end-line="22" selection-end-column="49" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="BernoulliEstimator.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/ModelUtils/Estimator/BernoulliEstimator.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="330">
+              <caret line="23" column="47" selection-start-line="23" selection-start-column="47" selection-end-line="23" selection-end-column="47" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="NegativeEstimator.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/ModelUtils/Estimator/NegativeEstimator.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="135">
+              <caret line="11" column="30" selection-start-line="11" selection-start-column="30" selection-end-line="11" selection-end-column="30" />
               <folding />
             </state>
           </provider>
@@ -127,12 +158,12 @@
         <option value="$PROJECT_DIR$/ModelUtils/Sampler/Sampler.py" />
         <option value="$PROJECT_DIR$/ModelUtils/GRU.py" />
         <option value="$PROJECT_DIR$/ModelUtils/EmbeddingLayer.py" />
-        <option value="$PROJECT_DIR$/ModelUtils/Estimator/BernoulliEstimator.py" />
-        <option value="$PROJECT_DIR$/ModelUtils/Estimator/BlackOutEstimator.py" />
-        <option value="$PROJECT_DIR$/ModelUtils/Estimator/ImportanceEstimator.py" />
         <option value="$PROJECT_DIR$/ModelUtils/Estimator/Estimator.py" />
         <option value="$PROJECT_DIR$/Test/UnitTests.py" />
         <option value="$PROJECT_DIR$/ModelUtils/Estimator/AlexEstimator.py" />
+        <option value="$PROJECT_DIR$/ModelUtils/Estimator/ImportanceEstimator.py" />
+        <option value="$PROJECT_DIR$/ModelUtils/Estimator/BlackOutEstimator.py" />
+        <option value="$PROJECT_DIR$/ModelUtils/Estimator/BernoulliEstimator.py" />
       </list>
     </option>
   </component>
@@ -697,42 +728,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ModelUtils/Estimator/NegativeEstimator.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="135">
-          <caret line="11" column="30" selection-start-line="11" selection-start-column="30" selection-end-line="11" selection-end-column="30" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ModelUtils/EmbeddingLayer.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="60">
           <caret line="4" column="43" selection-start-line="4" selection-start-column="43" selection-end-line="4" selection-end-column="43" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ModelUtils/Estimator/BernoulliEstimator.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="315">
-          <caret line="22" column="42" selection-start-line="22" selection-start-column="42" selection-end-line="22" selection-end-column="42" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ModelUtils/Estimator/BlackOutEstimator.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="300">
-          <caret line="21" column="42" selection-start-line="21" selection-start-column="42" selection-end-line="21" selection-end-column="42" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ModelUtils/Estimator/ImportanceEstimator.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="19" column="42" selection-start-line="19" selection-start-column="42" selection-end-line="19" selection-end-column="42" />
           <folding />
         </state>
       </provider>
@@ -768,7 +767,39 @@
     <entry file="file://$PROJECT_DIR$/ModelUtils/Estimator/AlexEstimator.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="330">
-          <caret line="23" column="40" selection-start-line="23" selection-start-column="40" selection-end-line="23" selection-end-column="40" />
+          <caret line="23" column="56" selection-start-line="23" selection-start-column="50" selection-end-line="23" selection-end-column="56" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ModelUtils/Estimator/ImportanceEstimator.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="285">
+          <caret line="20" column="47" selection-start-line="20" selection-start-column="47" selection-end-line="20" selection-end-column="47" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ModelUtils/Estimator/BlackOutEstimator.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="315">
+          <caret line="22" column="49" selection-start-line="22" selection-start-column="49" selection-end-line="22" selection-end-column="49" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ModelUtils/Estimator/BernoulliEstimator.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="330">
+          <caret line="23" column="47" selection-start-line="23" selection-start-column="47" selection-end-line="23" selection-end-column="47" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ModelUtils/Estimator/NegativeEstimator.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="11" column="30" selection-start-line="11" selection-start-column="30" selection-end-line="11" selection-end-column="30" />
           <folding />
         </state>
       </provider>
