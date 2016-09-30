@@ -18,7 +18,7 @@ class ImportanceEstimator(Estimator):
         if samples is None:
             raise ValueError("samples must be set")
         domain = tf.matmul(x, tf.transpose(h))
-        normalizor = tf.matmul(tf.exp(tf.matmul(samples, h)), weights)
+        normalizor = tf.matmul(tf.exp(tf.matmul(samples, tf.transpose(h))), weights)
         loss = tf.reduce_mean(domain - tf.log(q) - tf.log(normalizor))
         return loss
 

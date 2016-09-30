@@ -12,7 +12,7 @@ class UniformSampler(Sampler):
         """
         ss, _, _ = tf.nn.uniform_candidate_sampler(targets, num_targets, self.num_samples_,
                                                self.unique_, self.num_classes_)
-        tc = tf.ones_like(targets) / self.num_classes_
-        sc = tf.ones_like(ss) / self.num_classes_
+        tc = tf.ones_like(targets, dtype=tf.float32) / self.num_classes_
+        sc = tf.ones_like(ss, dtype=tf.float32) / self.num_classes_
         return ss, tc, sc
 

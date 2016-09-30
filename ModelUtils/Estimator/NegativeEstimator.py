@@ -11,8 +11,9 @@ class NegativeEstimator(Estimator):
         @Param x: the target word or batch
         @Param h: This is usually the output of neural network
         """
-        return tf.reduce_mean(tf.log(tf.nn.sigmoid(tf.matmul(x, h))) - tf.reduce_sum(tf.log(tf.nn.sigmoid(
-                                                                             tf.matmul(self.samples_, h))), 0))
+        samples = self.get_samples()
+        return tf.reduce_mean(tf.log(tf.nn.sigmoid(tf.matmul(x, tf.transpose(h)))) - tf.reduce_sum(tf.log(tf.nn.sigmoid(
+                                                                             tf.matmul(samples, tf.transpose(h)))), 0))
 
     def likelihood(self, x, h):
         """

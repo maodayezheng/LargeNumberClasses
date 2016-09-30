@@ -15,10 +15,11 @@ from DataUtils import BatchUtils
 
 def main():
     print "Dealing with Large number"
-    params = {"sampler_type": "uniform", "estimator_type": "IMP", "sample_size": 200, "batch_size": 25, "window_size": 70,
-              "epoch_step": 100, "input_dim": 100, "hidden_dim": 100, "output_dim": 100,
+    params = {"sampler_type": "uniform", "estimator_type": "IMP", "sample_size": [250, 500, 1000], "batch_size": [100, 50, 25],
+              "window_size": 70, "epoch_step": 100, "input_dim": 100, "hidden_dim": 100, "output_dim": 100,
               "lamb": 0.0001, "l_rate": 0.004, "embedding_path": None}
     predict_next_word(params)
+    tf.nn.uniform_candidate_sampler()
 
 
 def predict_next_word(params):

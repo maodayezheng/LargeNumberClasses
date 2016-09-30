@@ -20,8 +20,8 @@ class BernoulliEstimator(Estimator):
         if q is None:
             raise ValueError("target word weight must be provided")
 
-        domain = tf.matmul(tf.transpose(x), h)
-        normalizor = tf.matmul(tf.exp(tf.matmul(samples, h)), weights) + tf.exp(domain) * q
+        domain = tf.matmul(x, tf.transpose(h))
+        normalizor = tf.matmul(tf.exp(tf.matmul(samples, tf.transpose(h))), weights) + tf.exp(domain) * q
         return tf.reduce_mean(domain - tf.log(normalizor))
 
     def likelihood(self, x, h, q=None):
