@@ -20,7 +20,7 @@ class AlexEstimator(Estimator):
         if q is None:
             raise ValueError("target word weight must be provided")
 
-        domain = tf.matmul(tf.transpose(x), h)
+        domain = tf.matmul(x, tf.transpose(h))
         normalizor = tf.matmul(weights, tf.exp(tf.matmul(samples, tf.transpose(h)))) + tf.exp(domain) * q
         return tf.reduce_mean(domain - tf.log(normalizor)+tf.log(q))
 
