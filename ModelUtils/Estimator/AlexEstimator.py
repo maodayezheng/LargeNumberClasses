@@ -1,5 +1,6 @@
+from __future__ import print_function
 import tensorflow as tf
-from Estimator import Estimator
+from .Estimator import Estimator
 
 
 class AlexEstimator(Estimator):
@@ -32,4 +33,4 @@ class AlexEstimator(Estimator):
             @Param h: This is usually the output of neural network
             @Param q: The Weight of target
         """
-        print "likelihood"
+        print("likelihood")

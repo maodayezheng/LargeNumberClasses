@@ -1,3 +1,4 @@
+from __future__ import print_function
 import tensorflow as tf
 import json
 from ModelUtils.EmbeddingLayer import EmbeddingLayer
@@ -14,7 +15,7 @@ from DataUtils import BatchUtils
 
 
 def main():
-    print "Dealing with Large number"
+    print("Dealing with Large number")
     params = {"sampler_type": "uniform", "estimator_type": "IMP", "sample_size": [250, 500, 1000], "batch_size": [100, 50, 25],
               "window_size": 70, "epoch_step": 100, "input_dim": 100, "hidden_dim": 100, "output_dim": 100,
               "lamb": 0.0001, "l_rate": 0.004, "embedding_path": None}
@@ -121,7 +122,7 @@ def predict_next_word(params):
     s0 = None
     s = s0
     for i in range(40000):
-        print "training"
+        print("training")
         batch = []
 
         """

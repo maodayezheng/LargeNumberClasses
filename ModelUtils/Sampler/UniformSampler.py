@@ -1,5 +1,5 @@
 import tensorflow as tf
-from Sampler import Sampler
+from .Sampler import Sampler
 
 
 class UniformSampler(Sampler):
@@ -7,10 +7,10 @@ class UniformSampler(Sampler):
         """
         Draw samples from uniform distribution
 
-        @Param targets: The target words or batch
+        @Param targets(N): The target words or batch
         @Param num_targets: The length of target words or batch
         """
-        ss, _, _ = tf.nn.uniform_candidate_sampler(targets, num_targets, self.num_samples_,
+        ss, _, _ = tf.nn.uniform_candidate_sampler(tf.reshape(targets, (-1, 1)), num_targets, self.num_samples_,
                                                self.unique_, self.num_classes_)
         tc = tf.ones_like(targets, dtype=tf.float32) / self.num_classes_
         sc = tf.ones_like(ss, dtype=tf.float32) / self.num_classes_
