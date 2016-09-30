@@ -10,15 +10,12 @@ from ModelUtils.Estimator.BernoulliEstimator import BernoulliEstimator
 from ModelUtils.Estimator.ImportanceEstimator import ImportanceEstimator
 from ModelUtils.Estimator.BlackOutEstimator import BlackOutEstimator
 from ModelUtils.Estimator.NegativeEstimator import NegativeEstimator
-from DataUtils import DataUtils
-from DataUtils import BatchUtils
-
 
 def main():
     print("Dealing with Large number")
     params = {"sampler_type": "uniform", "estimator_type": "IMP", "sample_size": [250, 500, 1000],
               "batch_size": [100, 50, 25],
-              "num_classes": 50000, "window_size": 70, "epoch_step": 100, "input_dim": 100, "hidden_dim": 100,
+              "num_classes": 50000, "sentence_len": 70, "epoch_step": 100, "input_dim": 100, "hidden_dim": 100,
               "output_dim": 100,
               "lamb": 0.0001, "l_rate": 0.004}
     predict_next_word(params)
@@ -26,7 +23,9 @@ def main():
 
 def predict_next_word(params):
     """
-    Get the training hyper parameters
+    The RNN model to predict next word
+
+    @Param params: A dictionary of training hyper parameters
     """
 
     """
@@ -36,7 +35,7 @@ def predict_next_word(params):
     estimator_type = params["estimator_type"]
     sample_size = params["sample_size"]
     batch_size = params["batch_size"]
-    window_size = params["window_size"]
+    sentence_len = params["sentence_len"]
     epoch_step = params["epoch_step"]
     input_dim = params["input_dim"]
     hidden_dim = params["hidden_dim"]
@@ -46,21 +45,21 @@ def predict_next_word(params):
     num_classes = params["num_classes"]
 
     """
-    Loads the data stats and pre define approximation samples
-    """
-
-    """
-    Initialise the RNN computational graph
+    Initialise the input nodes
     """
     inputs = []
-
+    paddings = []
+    sentences = []
     for i in range(batch_size):
-        w = tf.placeholder(tf.int32, shape=None, name="window_{}".format(i))
-        inputs.append(w)
-
-    word_embedding = EmbeddingLayer("word", num_classes, input_dim)
-    cell = GRU(input_dim, hidden_dim, output_dim, "next-word")
-
+        s = tf.placeholder(tf.int32, shape=None, name="sentence_{}".format(i))
+        inputs.append(s)
+        padding = tf.placeholder(tf.int32, shape=None, name="padding_{}".format(i))
+        s_pad = tf.pad(s, padding)
+        sentences.append(s_pad)
+        paddings.append(padding)
+    """
+    Initialise sampler and loss estimator
+    """
     sampler = None
     if sampler_type is "uniform":
         sampler = UniformSampler(num_classes, sample_size)
@@ -83,59 +82,79 @@ def predict_next_word(params):
     else:
         raise Exception("{} type estimator is not support".format(estimator_type))
 
-    init_state = tf.zeros([batch_size, hidden_dim], dtype=tf.float32, name="init_state")
+    """
+    Initialise the word embedding layer
+    """
+    word_embedding = EmbeddingLayer("word", num_classes, input_dim)
 
     """
-    Reshape the input to feed in RNN
+    Reshape the input sentences
     """
-
-    windows = tf.squeeze(tf.pack(inputs))
-    windows = tf.split(1, window_size, windows)
-    l = len(windows)
+    sentences = tf.squeeze(tf.pack(sentences))
+    ss, tc, sc = estimator.draw_samples(sentences, sentence_len)
+    estimator.set_sample_weights(sc)
+    estimator.set_sample(ss)
+    sentences = tf.split(1, sentence_len, sentences)
+    mask = tf.zeros([batch_size, 1], dtype=tf.int32)
+    l = len(inputs)
     loss = 0
-    state = init_state
+
+    """
+    Initialise Recurrent network
+    """
+    cell = GRU(input_dim, hidden_dim, output_dim, "next-word")
+    state = tf.zeros([batch_size, hidden_dim], dtype=tf.float32, name="init_state")
     for i in range(l):
-        words = word_embedding(windows[i])
+        mask_t = tf.cast(tf.not_equal(sentences[i], mask), tf.float32)
+        words = word_embedding(sentences[i])
         state, output = cell(words, state)
+        state = state*mask_t
         if i < l:
-            '''
-            sample_set = sampler.get_sample_set(windows[i+1])
-            sample_vec = word_embedding(sample_set)
-            targets = word_embedding(windows[i+1])
-            loss += sampler.loss(targets, state, sample_vec)
-            '''
+            targets = word_embedding(sentences[i + 1])
+            loss += estimator.loss(targets, state, q=tc)*mask_t
 
     likelihood_exact = None
-
+    """
+    Training Loss
+    """
     l2 = lamb * (cell.l2_regular())
     objective = l2 + loss
     update = tf.train.GradientDescentOptimizer(l_rate).minimize(objective)
 
     """
-    Training
+    Initialise Variables
     """
     session = tf.Session()
     init = tf.initialize_all_variables()
     session.run(init)
-    s0 = None
-    s = s0
-    for i in range(40000):
-        print("training")
-        batch = []
+
+    """
+    Get the training batch
+    """
+    batch = []
+    start_pos = 0
+    iteration = 0
+    input_dict = {}
+    while True:
+        iteration += 1
+        end_pos = start_pos + batch_size - 1
+        # Stop criteria
+        if end_pos > len(batch):
+            break
+        mini_bacth = batch[start_pos:end_pos]
+        start_pos += batch_size
 
         """
         Feed the require inputs
         """
-        dict = {init_state.name: s}
-        for j in range(len(batch)):
-            dict[inputs[j].name] = batch[j]
+        for j in range(batch_size):
+            input_dict[inputs[j].name] = mini_bacth[j]
+            input_dict[paddings[j].name] = []
 
-        if i % epoch_step is 0:
-            dict[init_state.name] = s0
-            _, s, approx, exact = session.run([update, state, likelihood_approximate,
-                                               likelihood_exact], feed_dict=dict)
+        if iteration % epoch_step is 0:
+            _, exact = session.run([update, likelihood_exact], feed_dict=dict)
         else:
-            _, s = session.run([update, state], feed_dict=dict)
+            _ = session.run([update], feed_dict=dict)
 
 
 if __name__ == "main":

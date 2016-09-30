@@ -154,8 +154,8 @@ def EmbeddingLayerUnitTest(sess):
     assert(len(v) is 2), "The size of look up vectors is not consist"
 
 print("Start unit tests")
-sess = tf.Session()
-UniformSamplerUnitTest(sess)
+#sess = tf.Session()
+#UniformSamplerUnitTest(sess)
 #UnigramSamplerUnitTest(sess)
 #GRUUnitTest(sess)
 #EmbeddingLayerUnitTest(sess)
@@ -163,5 +163,5 @@ UniformSamplerUnitTest(sess)
 #BernoulliEstimatorUnitTest(sess)
 #ImportanceEstimatorUnitTest(sess)
 #NegativeEstimatorUnitTest(sess)
-#DataUtilsUnitTest()
+DataUtilsUnitTest()
 #BatchUtilsUnitTest()

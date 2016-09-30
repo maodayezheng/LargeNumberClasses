@@ -50,7 +50,7 @@ def create_vocabulary(source_path, vocab_size=40000, alpha=1.0):
     """
 
     """
-    Read the raw text
+    Create the vocabulary from raw text
     """
     dist = None
     with open(source_path, "r") as text:
@@ -58,27 +58,31 @@ def create_vocabulary(source_path, vocab_size=40000, alpha=1.0):
         text.close()
 
     top_n = dist.most_common(vocab_size)
-    print top_n
-#    for i in range(len(top_n)):
-#        p = top_n[i]
-
     vocab_idx_list = {}
+    frequency = []
+    for i in range(len(top_n)):
+        w, f = top_n[i]
+        vocab_idx_list[w] = i+1
+        frequency.append(f)
+
     """
-    Process text insert special token
+    Insert special token into vocabulary
     """
     start_symbol_idx = len(vocab_idx_list) + 1
     end_symbol_idx = start_symbol_idx + 1
     unk_symbol_idx = end_symbol_idx + 1
-    pad_symbol_idx = unk_symbol_idx + 1
-
     vocab_idx_list["<s>"] = start_symbol_idx
     vocab_idx_list["</s>"] = end_symbol_idx
     vocab_idx_list["<unk>"] = unk_symbol_idx
-    vocab_idx_list["<pad>"] = pad_symbol_idx
+    vocab_idx_list["<pad>"] = 0
 
+    """
+    Process convert text sentence into index based on vocab_idx_list
+    """
     processed_text = []
     unknow_count = 0
     sentence_count = 0
+    total = 0
     with open(source_path, "r") as text:
         s = []
         for sentence in text:
@@ -87,6 +91,7 @@ def create_vocabulary(source_path, vocab_size=40000, alpha=1.0):
             # Add the start symbol index
             s.append(start_symbol_idx)
             for w in sentence:
+                total += 1
                 idx = unk_symbol_idx
                 # check whether the word w is in the vocabulary
                 try:
@@ -100,15 +105,7 @@ def create_vocabulary(source_path, vocab_size=40000, alpha=1.0):
             s.append(end_symbol_idx)
             processed_text.append(s)
 
-    frequency = []
-    total_len = len(processed_text) + 2*sentence_count
-    index = 0
-    for w, f in vocabulary:
-        vocabulary[w] = index
-        index += 1
-        frequency.append(np.power(f/total_len, alpha))
-
-    return vocabulary, frequency, processed_text
+    print ("There are {} OOV words".format(unknow_count))
 
 
 
