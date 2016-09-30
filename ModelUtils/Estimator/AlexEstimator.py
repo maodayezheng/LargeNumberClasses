@@ -11,7 +11,7 @@ class AlexEstimator(Estimator):
             @Param h: This is usually the output of neural network
             @Param q: The Weight of target
         """
-        weights = tf.expand_dims(self.get_sample_weights(), 0)
+        weights = self.get_sample_weights()
         if weights is None:
             raise ValueError("sample weights must be set")
         samples = self.get_samples()

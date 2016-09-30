@@ -44,6 +44,8 @@ class Estimator(object):
         @Return sample_prob: The probability of sample occurrence
         """
         samples, target_prob, sample_prob = self.sampler_.draw_sample(target, num_targets)
+        target_prob = tf.expand_dims(target_prob, 0)
+        sample_prob = tf.expand_dims(sample_prob, 0)
         return samples, target_prob, sample_prob
 
     def set_sample(self, samples):
