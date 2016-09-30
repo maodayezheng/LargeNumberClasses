@@ -36,7 +36,7 @@ def clean_str(s):
     return string
 
 
-def create_vocabulary(source_path, vocab_size=40000, alpha=1.0):
+def create_vocabulary(source_path, vocab_size=40000):
     """
     Create vocabulary, calculate statistics of give text data and covert text data into vocabulary index
 
@@ -106,6 +106,8 @@ def create_vocabulary(source_path, vocab_size=40000, alpha=1.0):
             processed_text.append(s)
 
     print ("There are {} OOV words".format(unknow_count))
+    print ("The length of processed text is {}".format(total))
+    print("The number of <s> and </s> is {}".format(sentence_count))
 
 
 

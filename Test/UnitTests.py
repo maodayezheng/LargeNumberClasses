@@ -14,7 +14,7 @@ from ModelUtils.GRU import GRU
 def DataUtilsUnitTest():
     source_path = "../OriginalData/europarl-v7.en"
     save_path = "ProceessedData/"
-    vocab, frequency, processd_text = DataUtils.create_vocabulary(source_path)
+    DataUtils.create_vocabulary(source_path)
 
 
 def AlexEstimatorUnitTest(sess):

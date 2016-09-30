@@ -149,7 +149,7 @@ def predict_next_word(params):
         """
         for j in range(batch_size):
             input_dict[inputs[j].name] = mini_bacth[j]
-            input_dict[paddings[j].name] = []
+            input_dict[paddings[j].name] = [[sentence_len-len(mini_bacth[j]), 0]]
 
         if iteration % epoch_step is 0:
             _, exact = session.run([update, likelihood_exact], feed_dict=dict)
