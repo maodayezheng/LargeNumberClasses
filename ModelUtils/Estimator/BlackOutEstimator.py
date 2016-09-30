@@ -8,23 +8,28 @@ class BlackOutEstimator(Estimator):
         """
             Calculate the estimate loss of blackout approximation
 
-            @Param x: The target word or batch
-            @Param h: This is usually the output of neural network
-            @Param q: The Weight of target
+            @Param x(NxD): The target word or batch
+            @Param h(NxD): This is usually the output of neural network
+            @Param q(N): The Weight of target
         """
+        # K
         weights = self.get_sample_weights()
         if weights is None:
             raise ValueError("sample weights must be set")
+        # KxD
         samples = self.get_samples()
         if samples is None:
             raise ValueError("samples must be set")
-        if q is None:
-            raise ValueError("target word weight must be provided")
-        domain = tf.matmul(x, tf.transpose(h))
-        sample_partition = tf.mul(tf.exp(tf.matmul(samples, h)), weights)
-        normalizor = tf.exp(domain)*q + tf.reduce_sum(sample_partition, 1)
-        loss = domain - tf.log(q) + tf.reduce_sum(tf.log(normalizor-sample_partition))
-        loss -= self.get_sample_size()*tf.log(normalizor)
+        # N
+        target_scores = tf.reduce_sum(x * h, 1)
+        # N x K
+        samples_scores = tf.matmul(h, samples, transpose_b=True)
+        # N
+        Z = tf.exp(target_scores) / q + tf.reduce_sum(tf.exp(samples_scores) / weights, 1)
+        # N x K
+        neg_scores = tf.log(Z - tf.exp(samples_scores) / weights)
+        loss = tf.reduce_mean(target_scores - tf.log(q) + tf.reduce_sum(neg_scores, 1) -
+                              (tf.shape(samples)[0] + 1.0) * tf.log(Z))
         return loss
 
     def likelihood(self, x, h, q=None):
