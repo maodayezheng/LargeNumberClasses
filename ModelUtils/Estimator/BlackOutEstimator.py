@@ -27,9 +27,9 @@ class BlackOutEstimator(Estimator):
         # N
         Z = tf.exp(target_scores) / q + tf.reduce_sum(tf.exp(samples_scores) / weights, 1)
         # N x K
-        neg_scores = tf.log(Z - tf.exp(samples_scores) / weights)
+        neg_scores = tf.log(tf.reshape(Z, (-1, 1)) - tf.exp(samples_scores) / weights)
         loss = tf.reduce_mean(target_scores - tf.log(q) + tf.reduce_sum(neg_scores, 1) -
-                              (tf.shape(samples)[0] + 1.0) * tf.log(Z))
+                              (tf.cast(tf.shape(samples)[0], dtype=tf.float32) + 1.0) * tf.log(Z))
         return loss
 
     def likelihood(self, x, h, q=None):
