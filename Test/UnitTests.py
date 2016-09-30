@@ -12,10 +12,16 @@ from ModelUtils.GRU import GRU
 
 
 def DataUtilsUnitTest():
+<<<<<<< HEAD
     source_path = "../OriginalData/europarl-v7.en"
     save_path = "ProceessedData/"
     vocab, frequency, processd_text = DataUtils.create_vocabulary(source_path)
 
+=======
+    s = "I AM BOWEN! HELLO WORLD !"
+    string = DataUtils.clean_str(s)
+    print(s)
+>>>>>>> 59a6648b570b7d91c81ebcf119040cd11bce6c93
 
 def AlexEstimatorUnitTest(sess):
     print("Start test AlexEstimator")
@@ -52,6 +58,7 @@ def BernoulliEstimatorUnitTest(sess):
     sess.run(init)
     loss = sess.run([loss])
     print (loss)
+
 
 
 def ImportanceEstimatorUnitTest(sess):
@@ -151,7 +158,6 @@ def EmbeddingLayerUnitTest(sess):
     sess.run(init)
     v = sess.run(v)
     assert(len(v) is 2), "The size of look up vectors is not consist"
-
 
 print("Start unit tests")
 sess = tf.Session()
