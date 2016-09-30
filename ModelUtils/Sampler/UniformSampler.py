@@ -10,5 +10,9 @@ class UniformSampler(Sampler):
         @Param targets: The target words or batch
         @Param num_targets: The length of target words or batch
         """
-        return tf.nn.uniform_candidate_sampler(targets, num_targets, self.num_samples_,
+        ss, _, _ = tf.nn.uniform_candidate_sampler(targets, num_targets, self.num_samples_,
                                                self.unique_, self.num_classes_)
+        tc = tf.ones_like(targets) / self.num_classes_
+        sc = tf.ones_like(ss) / self.num_classes_
+        return ss, tc, sc
+
