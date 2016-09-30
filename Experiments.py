@@ -16,11 +16,12 @@ from DataUtils import BatchUtils
 
 def main():
     print("Dealing with Large number")
-    params = {"sampler_type": "uniform", "estimator_type": "IMP", "sample_size": [250, 500, 1000], "batch_size": [100, 50, 25],
-              "window_size": 70, "epoch_step": 100, "input_dim": 100, "hidden_dim": 100, "output_dim": 100,
-              "lamb": 0.0001, "l_rate": 0.004, "embedding_path": None}
+    params = {"sampler_type": "uniform", "estimator_type": "IMP", "sample_size": [250, 500, 1000],
+              "batch_size": [100, 50, 25],
+              "num_classes": 50000, "window_size": 70, "epoch_step": 100, "input_dim": 100, "hidden_dim": 100,
+              "output_dim": 100,
+              "lamb": 0.0001, "l_rate": 0.004}
     predict_next_word(params)
-    tf.nn.uniform_candidate_sampler()
 
 
 def predict_next_word(params):
@@ -42,14 +43,11 @@ def predict_next_word(params):
     output_dim = params["output_dim"]
     lamb = params["lamb"]
     l_rate = params["l_rate"]
-    embedding_path = params["embedding_path"]
+    num_classes = params["num_classes"]
 
     """
     Loads the data stats and pre define approximation samples
     """
-    frequency = None
-    with open("ModelParams/Frequency.txt", "r") as token_freq:
-        frequency = json.loads(token_freq.read())
 
     """
     Initialise the RNN computational graph
@@ -60,32 +58,32 @@ def predict_next_word(params):
         w = tf.placeholder(tf.int32, shape=None, name="window_{}".format(i))
         inputs.append(w)
 
-    word_embedding = EmbeddingLayer("word", 40000, 300)
+    word_embedding = EmbeddingLayer("word", num_classes, input_dim)
     cell = GRU(input_dim, hidden_dim, output_dim, "next-word")
 
     sampler = None
     if sampler_type is "uniform":
-        sampler = UniformSampler()
+        sampler = UniformSampler(num_classes, sample_size)
     elif sampler_type is "unigram":
-        sampler = UnigramSampler()
+        sampler = UnigramSampler(num_classes, sample_size)
     else:
-      raise Exception("{} type sampler is not support".format(sampler_type))
+        raise Exception("{} type sampler is not support".format(sampler_type))
 
     estimator = None
     if estimator_type is "BER":
-       estimator = BernoulliEstimator()
+        estimator = BernoulliEstimator(sampler)
     elif estimator_type is "IMP":
-       estimator = ImportanceEstimator()
+        estimator = ImportanceEstimator(sampler)
     elif estimator_type is "NEG":
-        estimator = NegativeEstimator()
+        estimator = NegativeEstimator(sampler)
     elif estimator_type is "BLA":
-        estimator = BlackOutEstimator()
+        estimator = BlackOutEstimator(sampler)
     elif estimator_type is "ALEX":
-        estimator = AlexEstimator()
+        estimator = AlexEstimator(sampler)
     else:
         raise Exception("{} type estimator is not support".format(estimator_type))
 
-    init_state = tf.placeholder(tf.float32, shape=None, name="init_state")
+    init_state = tf.zeros([batch_size, hidden_dim], dtype=tf.float32, name="init_state")
 
     """
     Reshape the input to feed in RNN
@@ -135,7 +133,7 @@ def predict_next_word(params):
         if i % epoch_step is 0:
             dict[init_state.name] = s0
             _, s, approx, exact = session.run([update, state, likelihood_approximate,
-                                                  likelihood_exact], feed_dict=dict)
+                                               likelihood_exact], feed_dict=dict)
         else:
             _, s = session.run([update, state], feed_dict=dict)
 

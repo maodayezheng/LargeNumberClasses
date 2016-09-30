@@ -12,9 +12,10 @@ from ModelUtils.GRU import GRU
 
 
 def DataUtilsUnitTest():
-    s = "I AM BOWEN! HELLO WORLD !"
-    string = DataUtils.clean_str(s)
-    print(s)
+    source_path = "../OriginalData/europarl-v7.en"
+    save_path = "ProceessedData/"
+    vocab, frequency, processd_text = DataUtils.create_vocabulary(source_path)
+
 
 def AlexEstimatorUnitTest(sess):
     print("Start test AlexEstimator")
@@ -50,7 +51,8 @@ def BernoulliEstimatorUnitTest(sess):
     init = tf.initialize_all_variables()
     sess.run(init)
     loss = sess.run([loss])
-    print loss
+    print (loss)
+
 
 
 def ImportanceEstimatorUnitTest(sess):
@@ -69,7 +71,7 @@ def ImportanceEstimatorUnitTest(sess):
     init = tf.initialize_all_variables()
     sess.run(init)
     loss = sess.run([loss])
-    print loss
+    print (loss)
 
 def NegativeEstimatorUnitTest(sess):
     print("Start test NegativeEstimator")
@@ -87,11 +89,10 @@ def NegativeEstimatorUnitTest(sess):
     init = tf.initialize_all_variables()
     sess.run(init)
     loss = sess.run([loss])
-    print loss
-
+    print (loss)
 
 def BlackOutEstimatorUnitTest(sess):
-    print "Start test NegativeEstimator"
+    print ("Start test NegativeEstimator")
     sampler = UniformSampler(40, 4)
     embedding = EmbeddingLayer(40, 10, "test")
     estimator = NegativeEstimator(sampler)
@@ -107,13 +108,12 @@ def BlackOutEstimatorUnitTest(sess):
     sess.run(init)
     loss = sess.run([loss])
 
-
 def UniformSamplerUnitTest(sess):
-    print "Start test UniformSampler"
+    print ("Start test UniformSampler")
     k = 10
     sampler = UniformSampler(40, k)
-    target = tf.constant([[1, 5, 6]], dtype=tf.int64)
-    sample, true_count, sample_count = sampler.draw_sample(target, 3)
+    target = tf.constant([1, 5, 6], dtype=tf.int64)
+    sample, true_count, sample_count = sampler.draw_sample(target, 1)
     s, tc, sc = sess.run([sample, true_count, sample_count])
     print(sc)
     assert (len(s) is k), "Uniform Sampler test fail"
@@ -155,13 +155,13 @@ def EmbeddingLayerUnitTest(sess):
 
 print("Start unit tests")
 sess = tf.Session()
-#UniformSamplerUnitTest(sess)
+UniformSamplerUnitTest(sess)
 #UnigramSamplerUnitTest(sess)
 #GRUUnitTest(sess)
 #EmbeddingLayerUnitTest(sess)
 #AlexEstimatorUnitTest(sess)
 #BernoulliEstimatorUnitTest(sess)
 #ImportanceEstimatorUnitTest(sess)
-NegativeEstimatorUnitTest(sess)
+#NegativeEstimatorUnitTest(sess)
 #DataUtilsUnitTest()
 #BatchUtilsUnitTest()
