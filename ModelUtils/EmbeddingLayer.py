@@ -50,3 +50,9 @@ class EmbeddingLayer(object):
             path += name
         self.saver.restore(sess, path)
 
+    def get_embedding(self):
+        """
+        Get embedding
+        """
+        return self.embedding_
+

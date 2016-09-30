@@ -162,6 +162,6 @@ print("Start unit tests")
 #AlexEstimatorUnitTest(sess)
 #BernoulliEstimatorUnitTest(sess)
 #ImportanceEstimatorUnitTest(sess)
-#NegativeEstimatorUnitTest(sess)
+#NegativeEstimatorUnitTest(sess)w
 DataUtilsUnitTest()
 #BatchUtilsUnitTest()

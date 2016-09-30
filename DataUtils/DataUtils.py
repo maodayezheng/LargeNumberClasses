@@ -17,7 +17,7 @@ def clean_str(s):
     @Return: Array of lower case word tokens
     """
     string = re.sub(r"[^A-Za-z0-9(),!?\'\`]", " ", s)
-    string = re.sub(r",", "", string)
+    string = re.sub(r",", " ", string)
     string = re.sub(r"\'s", " \'s", string)
     string = re.sub(r"\'ve", " \'ve", string)
     string = re.sub(r"n\'t", " n\'t", string)
@@ -59,7 +59,7 @@ def create_vocabulary(source_path, vocab_size=40000):
 
     top_n = dist.most_common(vocab_size)
     vocab_idx_list = {}
-    frequency = []
+    frequency = [0.0]
     for i in range(len(top_n)):
         w, f = top_n[i]
         vocab_idx_list[w] = i+1
@@ -83,6 +83,7 @@ def create_vocabulary(source_path, vocab_size=40000):
     unknow_count = 0
     sentence_count = 0
     total = 0
+    unk_word_list = []
     with open(source_path, "r") as text:
         s = []
         for sentence in text:
@@ -102,17 +103,32 @@ def create_vocabulary(source_path, vocab_size=40000):
                     # if w is not in then insert the unk_symbol_idx
                     s.append(idx)
                     unknow_count += 1
+                    if unknow_count < 5000:
+                        unk_word_list.append(w)
             s.append(end_symbol_idx)
             processed_text.append(s)
+
+    with open('../ProcessedData/unk.txt', 'w') as unk_word_txt:
+            unk_word_txt.write(json.dumps(unk_word_list))
+            unk_word_txt.close()
 
     print ("There are {} OOV words".format(unknow_count))
     print ("The length of processed text is {}".format(total))
     print("The number of <s> and </s> is {}".format(sentence_count))
 
+    for i in range(len(frequency)):
+        frequency[i] /= float(total)
 
+    frequency.append(float(sentence_count)/float(total))
+    frequency.append(float(sentence_count) / float(total))
+    frequency.append(float(unknow_count) / float(total))
 
-
-
+    with open('../ProcessedData/frequency.txt', 'w') as freq:
+        freq.write(json.dumps(frequency))
+        freq.close()
+    with open('../ProcessedData/vocabulary.txt', 'w') as vocab:
+        vocab.write(json.dumps(vocab_idx_list))
+        vocab.close()
 """
 def save_index(data, path):
     with open(path, 'w') as set:

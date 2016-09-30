@@ -102,8 +102,11 @@ def predict_next_word(params):
     """
     Initialise Recurrent network
     """
+    exact_log_like = 0.0
     cell = GRU(input_dim, hidden_dim, output_dim, "next-word")
     state = tf.zeros([batch_size, hidden_dim], dtype=tf.float32, name="init_state")
+    embedding = word_embedding.get_embedding()
+    approx_log_like = 0.0
     for i in range(l):
         mask_t = tf.cast(tf.not_equal(sentences[i], mask), tf.float32)
         words = word_embedding(sentences[i])
@@ -112,8 +115,11 @@ def predict_next_word(params):
         if i < l:
             targets = word_embedding(sentences[i + 1])
             loss += estimator.loss(targets, state, q=tc)*mask_t
+            exact_log_like += exact_log_likelihood(targets, state, embedding)
+            approx_log_like += estimator.likelihood(targets, state)
 
-    likelihood_exact = None
+    exact_log_like = tf.reduce_mean(exact_log_like)
+    approx_log_like = tf.reduce_mean(approx_log_like)
     """
     Training Loss
     """
@@ -152,10 +158,16 @@ def predict_next_word(params):
             input_dict[paddings[j].name] = [[sentence_len-len(mini_bacth[j]), 0]]
 
         if iteration % epoch_step is 0:
-            _, exact = session.run([update, likelihood_exact], feed_dict=dict)
+            _, exact, approx = session.run([update, exact_log_like, approx_log_like], feed_dict=dict)
         else:
             _ = session.run([update], feed_dict=dict)
 
+
+def exact_log_likelihood(x, h, embedding):
+    print("exact log likelihood")
+    target_scores = tf.reduce_sum(x * h, 1)
+    Z = tf.reduce_sum(embedding*h, 1)
+    return tf.log(target_scores/Z)
 
 if __name__ == "main":
     main()
