@@ -4,6 +4,7 @@ The mothods in this file are used to pre-process text data
 from nltk import FreqDist
 import json
 import numpy as np
+import nltk
 import re
 
 
@@ -16,6 +17,7 @@ def clean_str(s):
     @Return: Array of lower case word tokens
     """
     string = re.sub(r"[^A-Za-z0-9(),!?\'\`]", " ", s)
+    string = re.sub(r",", "", string)
     string = re.sub(r"\'s", " \'s", string)
     string = re.sub(r"\'ve", " \'ve", string)
     string = re.sub(r"n\'t", " n\'t", string)
@@ -28,15 +30,18 @@ def clean_str(s):
     string = re.sub(r"\)", " \) ", string)
     string = re.sub(r"\?", " \? ", string)
     string = re.sub(r"\s{2,}", " ", string)
-    return string.lower().split(" ")
+    string = string.lower().split(" ")
+    stopwords = nltk.corpus.stopwords.words('english')
+    string = [w for w in string if w not in stopwords]
+    return string
 
 
-def create_vocabulary(path, vocab_size=45000, alpha=1.0):
+def create_vocabulary(source_path, vocab_size=40000, alpha=1.0):
     """
     Create vocabulary, calculate statistics of give text data and covert text data into vocabulary index
 
     @Param Path: The path to target text data
-    @Param vocab_size: The size of produced vocabulary default is 45,000
+    @Param vocab_size: The size of produced vocabulary default is 40,000
     @Param alpha: The power factor on empirical frequency
 
     @Return vocabulary: A lookup table with (token, index) pairs
@@ -48,54 +53,66 @@ def create_vocabulary(path, vocab_size=45000, alpha=1.0):
     Read the raw text
     """
     dist = None
-    with open(path, "r") as text:
+    with open(source_path, "r") as text:
         dist = FreqDist(clean_str(text.read()))
         text.close()
 
     top_n = dist.most_common(vocab_size)
-    vocabulary = top_n.keys()
+    print top_n
+#    for i in range(len(top_n)):
+#        p = top_n[i]
 
+    vocab_idx_list = {}
     """
     Process text insert special token
     """
+    start_symbol_idx = len(vocab_idx_list) + 1
+    end_symbol_idx = start_symbol_idx + 1
+    unk_symbol_idx = end_symbol_idx + 1
+    pad_symbol_idx = unk_symbol_idx + 1
+
+    vocab_idx_list["<s>"] = start_symbol_idx
+    vocab_idx_list["</s>"] = end_symbol_idx
+    vocab_idx_list["<unk>"] = unk_symbol_idx
+    vocab_idx_list["<pad>"] = pad_symbol_idx
+
     processed_text = []
     unknow_count = 0
     sentence_count = 0
-    with open(path, "r") as text:
+    with open(source_path, "r") as text:
+        s = []
         for sentence in text:
             sentence = clean_str(sentence)
             sentence_count += 1
-            processed_text.append("<s>")
+            # Add the start symbol index
+            s.append(start_symbol_idx)
             for w in sentence:
-                if w not in vocabulary:
-                    processed_text.append("<unk>")
+                idx = unk_symbol_idx
+                # check whether the word w is in the vocabulary
+                try:
+                    # if w in the vocabulary then add the idx of w
+                    idx = vocab_idx_list[w]
+                    s.append(idx)
+                except KeyError:
+                    # if w is not in then insert the unk_symbol_idx
+                    s.append(idx)
                     unknow_count += 1
-            processed_text.append("</s>")
+            s.append(end_symbol_idx)
+            processed_text.append(s)
 
-    top_n["<s>"] = sentence_count
-    top_n["</s>"] = sentence_count
-    top_n["<unk>"] = unknow_count
-
-    """
-    Create vocabulary and calculate frequency
-    """
-
-    vocabulary = {}
     frequency = []
     total_len = len(processed_text) + 2*sentence_count
     index = 0
-    for w, f in top_n:
+    for w, f in vocabulary:
         vocabulary[w] = index
         index += 1
         frequency.append(np.power(f/total_len, alpha))
 
-    """
-    Convert text data into index form according to vocabulary
-    """
-    for i in range(total_len):
-        processed_text[i] = vocabulary[processed_text[i]]
-
     return vocabulary, frequency, processed_text
+
+
+
+
 
 """
 def save_index(data, path):

@@ -12,12 +12,13 @@ from ModelUtils.GRU import GRU
 
 
 def DataUtilsUnitTest():
-    s = "I AM BOWEN! HELLO WORLD !"
-    string = DataUtils.clean_str(s)
-    print s
+    source_path = "../OriginalData/europarl-v7.en"
+    save_path = "ProceessedData/"
+    vocab, frequency, processd_text = DataUtils.create_vocabulary(source_path)
+
 
 def AlexEstimatorUnitTest(sess):
-    print "Start test AlexEstimator"
+    print("Start test AlexEstimator")
     sampler = UniformSampler(40, 4)
     embedding = EmbeddingLayer(40, 10, "test")
     estimator = AlexEstimator(sampler)
@@ -32,10 +33,10 @@ def AlexEstimatorUnitTest(sess):
     init = tf.initialize_all_variables()
     sess.run(init)
     loss = sess.run([loss])
-    print loss
+    print(loss)
 
 def BernoulliEstimatorUnitTest(sess):
-    print "Start test BernoulliEstimator"
+    print("Start test BernoulliEstimator")
     sampler = UniformSampler(40, 4)
     embedding = EmbeddingLayer(40, 10, "test")
     estimator = BernoulliEstimator(sampler)
@@ -50,10 +51,11 @@ def BernoulliEstimatorUnitTest(sess):
     init = tf.initialize_all_variables()
     sess.run(init)
     loss = sess.run([loss])
-    print loss
+    print (loss)
+
 
 def ImportanceEstimatorUnitTest(sess):
-    print "Start test ImportanceEstimator"
+    print("Start test ImportanceEstimator")
     sampler = UniformSampler(40, 4)
     embedding = EmbeddingLayer(40, 10, "test")
     estimator = ImportanceEstimator(sampler)
@@ -68,10 +70,10 @@ def ImportanceEstimatorUnitTest(sess):
     init = tf.initialize_all_variables()
     sess.run(init)
     loss = sess.run([loss])
-    print loss
+    print (loss)
 
 def NegativeEstimatorUnitTest(sess):
-    print "Start test NegativeEstimator"
+    print("Start test NegativeEstimator")
     sampler = UniformSampler(40, 4)
     embedding = EmbeddingLayer(40, 10, "test")
     estimator = NegativeEstimator(sampler)
@@ -86,11 +88,10 @@ def NegativeEstimatorUnitTest(sess):
     init = tf.initialize_all_variables()
     sess.run(init)
     loss = sess.run([loss])
-    print loss
-
+    print (loss)
 
 def BlackOutEstimatorUnitTest(sess):
-    print "Start test NegativeEstimator"
+    print ("Start test NegativeEstimator")
     sampler = UniformSampler(40, 4)
     embedding = EmbeddingLayer(40, 10, "test")
     estimator = NegativeEstimator(sampler)
@@ -106,19 +107,18 @@ def BlackOutEstimatorUnitTest(sess):
     sess.run(init)
     loss = sess.run([loss])
 
-
 def UniformSamplerUnitTest(sess):
-    print "Start test UniformSampler"
+    print ("Start test UniformSampler")
     k = 10
     sampler = UniformSampler(40, k)
-    target = tf.constant([[1, 5, 6]], dtype=tf.int64)
-    sample, true_count, sample_count = sampler.draw_sample(target, 3)
+    target = tf.constant([1, 5, 6], dtype=tf.int64)
+    sample, true_count, sample_count = sampler.draw_sample(target, 1)
     s, tc, sc = sess.run([sample, true_count, sample_count])
-    print sc
+    print(sc)
     assert (len(s) is k), "Uniform Sampler test fail"
 
 def UnigramSamplerUnitTest(sess):
-    print "Start test UnigramSampler"
+    print("Start test UnigramSampler")
     dist = [0.1, 0.2, 0.3, 0.4]
     sampler = UnigramSampler(4, 2, proposed_dist=dist)
     target = tf.constant([[1]], dtype=tf.int64)
@@ -128,7 +128,7 @@ def UnigramSamplerUnitTest(sess):
 
 
 def GRUUnitTest(sess):
-    print "Start test GRU"
+    print("Start test GRU")
     input_dim = 10
     hidden_dim = 30
     output_dim = 30
@@ -143,7 +143,7 @@ def GRUUnitTest(sess):
     assert (len(h[0]) is hidden_dim), "hidden dimension not consist"
 
 def EmbeddingLayerUnitTest(sess):
-    print "Start test EmbeddingLayer"
+    print("Start test EmbeddingLayer")
     embedding = EmbeddingLayer(10, 1, "test")
     target = tf.constant([0, 1], dtype=tf.int64)
     v = embedding(target)
@@ -152,15 +152,16 @@ def EmbeddingLayerUnitTest(sess):
     v = sess.run(v)
     assert(len(v) is 2), "The size of look up vectors is not consist"
 
-print "Start unit tests"
+
+print("Start unit tests")
 sess = tf.Session()
-#UniformSamplerUnitTest(sess)
+UniformSamplerUnitTest(sess)
 #UnigramSamplerUnitTest(sess)
 #GRUUnitTest(sess)
 #EmbeddingLayerUnitTest(sess)
 #AlexEstimatorUnitTest(sess)
 #BernoulliEstimatorUnitTest(sess)
 #ImportanceEstimatorUnitTest(sess)
-NegativeEstimatorUnitTest(sess)
+#NegativeEstimatorUnitTest(sess)
 #DataUtilsUnitTest()
 #BatchUtilsUnitTest()

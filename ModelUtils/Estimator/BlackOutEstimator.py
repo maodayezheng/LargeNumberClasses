@@ -1,5 +1,6 @@
+from __future__ import print_function
 import tensorflow as tf
-from Estimator import Estimator
+from .Estimator import Estimator
 
 
 class BlackOutEstimator(Estimator):
@@ -20,7 +21,7 @@ class BlackOutEstimator(Estimator):
         if q is None:
             raise ValueError("target word weight must be provided")
         domain = tf.matmul(x, tf.transpose(h))
-        sample_partition= tf.mul(tf.exp(tf.matmul(samples, tf.transpose(h))), weights)
+        sample_partition = tf.mul(tf.exp(tf.matmul(samples, h)), weights)
         normalizor = tf.exp(domain)*q + tf.reduce_sum(sample_partition, 1)
         loss = domain - tf.log(q) + tf.reduce_sum(tf.log(normalizor-sample_partition))
         loss -= self.get_sample_size()*tf.log(normalizor)
@@ -34,4 +35,4 @@ class BlackOutEstimator(Estimator):
             @Param h: This is usually the output of neural network
             @Param q: The Weight of target
         """
-        print "likelihood"
+        print("likelihood")
