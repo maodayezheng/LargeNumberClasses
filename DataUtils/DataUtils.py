@@ -132,7 +132,7 @@ def create_vocabulary(source_path, vocab_size=40000):
     with open('../ProcessedData/vocabulary_100000.txt', 'w') as vocab:
         vocab.write(json.dumps(vocab_idx_list))
         vocab.close()
-    with open('../ProcessedData/sentences.txt_100000', 'w') as sentence:
+    with open('../ProcessedData/sentences_100000.txt', 'w') as sentence:
         for s in processed_text:
-            sentence.write(json.dumps(s))
+            sentence.write(json.dumps(s)+"\n")
         sentence.close()

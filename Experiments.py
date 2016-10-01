@@ -11,11 +11,12 @@ from ModelUtils.Estimator.ImportanceEstimator import ImportanceEstimator
 from ModelUtils.Estimator.BlackOutEstimator import BlackOutEstimator
 from ModelUtils.Estimator.NegativeEstimator import NegativeEstimator
 
+
 def main():
     print("Dealing with Large number")
     params = {"sampler_type": "uniform", "estimator_type": "IMP", "sample_size": [250, 500, 1000],
               "batch_size": [100, 50, 25],
-              "num_classes": 50000, "sentence_len": 70, "epoch_step": 100, "input_dim": 100, "hidden_dim": 100,
+              "num_classes": 40000, "sentence_len": 70, "epoch_step": 100, "input_dim": 100, "hidden_dim": 100,
               "output_dim": 100,
               "lamb": 0.0001, "l_rate": 0.004}
     predict_next_word(params)
@@ -64,7 +65,10 @@ def predict_next_word(params):
     if sampler_type is "uniform":
         sampler = UniformSampler(num_classes, sample_size)
     elif sampler_type is "unigram":
-        sampler = UnigramSampler(num_classes, sample_size)
+        with open("../ProcessedData/frequency_100000.txt", 'r') as freq:
+            p_dist = json.loads(freq.read())
+            sampler = UnigramSampler(num_classes, sample_size, proposed_dist=p_dist)
+            freq.close()
     else:
         raise Exception("{} type sampler is not support".format(sampler_type))
 
@@ -138,6 +142,11 @@ def predict_next_word(params):
     Get the training batch
     """
     batch = []
+    with open('../ProcessedData/sentences_100000.txt', 'r') as data:
+        for d in data:
+            batch.append(json.loads(d))
+        data.close()
+
     start_pos = 0
     iteration = 0
     input_dict = {}

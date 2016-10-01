@@ -1,4 +1,5 @@
 import tensorflow as tf
+import json
 from DataUtils import DataUtils
 from ModelUtils.Sampler.UniformSampler import UniformSampler
 from ModelUtils.Sampler.UnigramSampler import UnigramSampler
@@ -153,6 +154,7 @@ def EmbeddingLayerUnitTest(sess):
     v = sess.run(v)
     assert(len(v) is 2), "The size of look up vectors is not consist"
 
+
 print("Start unit tests")
 #sess = tf.Session()
 #UniformSamplerUnitTest(sess)
@@ -162,6 +164,6 @@ print("Start unit tests")
 #AlexEstimatorUnitTest(sess)
 #BernoulliEstimatorUnitTest(sess)
 #ImportanceEstimatorUnitTest(sess)
-#NegativeEstimatorUnitTest(sess)w
+#NegativeEstimatorUnitTest(sess)
 DataUtilsUnitTest()
 #BatchUtilsUnitTest()
