@@ -32,7 +32,7 @@ def clean_str(s):
     string = re.sub(r"\s{2,}", " ", string)
     string = string.lower().split(" ")
     stopwords = nltk.corpus.stopwords.words('english')
-    string = [w for w in string if w not in stopwords]
+    string = [w for w in string if w not in stopwords and not '']
     return string
 
 
@@ -52,11 +52,22 @@ def create_vocabulary(source_path, vocab_size=40000):
     """
     Create the vocabulary from raw text
     """
-    dist = None
+    words = []
+    iters = 0
+    sentences = []
     with open(source_path, "r") as text:
-        dist = FreqDist(clean_str(text.read()))
+        for line in text:
+            iters += 1
+            if iters % 100000 is 0:
+                print("processed {} sentence".format(iters))
+                break
+            sentence = clean_str(line)
+            sentence.pop()
+            sentences.append(sentence)
+            words += sentence
         text.close()
 
+    dist = FreqDist(words)
     top_n = dist.most_common(vocab_size)
     vocab_idx_list = {}
     frequency = [0.0]
@@ -77,40 +88,32 @@ def create_vocabulary(source_path, vocab_size=40000):
     vocab_idx_list["<pad>"] = 0
 
     """
-    Process convert text sentence into index based on vocab_idx_list
+    Convert text sentence into index based on vocab_idx_list
     """
     processed_text = []
     unknow_count = 0
     sentence_count = 0
     total = 0
     unk_word_list = []
-    with open(source_path, "r") as text:
-        s = []
-        for sentence in text:
-            sentence = clean_str(sentence)
-            sentence_count += 1
-            # Add the start symbol index
-            s.append(start_symbol_idx)
-            for w in sentence:
-                total += 1
-                idx = unk_symbol_idx
-                # check whether the word w is in the vocabulary
-                try:
-                    # if w in the vocabulary then add the idx of w
-                    idx = vocab_idx_list[w]
-                    s.append(idx)
-                except KeyError:
-                    # if w is not in then insert the unk_symbol_idx
-                    s.append(idx)
-                    unknow_count += 1
-                    if unknow_count < 5000:
-                        unk_word_list.append(w)
-            s.append(end_symbol_idx)
-            processed_text.append(s)
-
-    with open('../ProcessedData/unk.txt', 'w') as unk_word_txt:
-            unk_word_txt.write(json.dumps(unk_word_list))
-            unk_word_txt.close()
+    for sentence in sentences:
+        s = [start_symbol_idx]
+        idx = unk_symbol_idx
+        for w in sentence:
+            total += 1
+            idx = unk_symbol_idx
+            # check whether the word w is in the vocabulary
+            try:
+                # if w in the vocabulary then add the idx of w
+                idx = vocab_idx_list[w]
+                s.append(idx)
+            except KeyError:
+                # if w is not in then insert the unk_symbol_idx
+                s.append(idx)
+                unknow_count += 1
+                if unknow_count < 5000:
+                    unk_word_list.append(w)
+        s.append(end_symbol_idx)
+        processed_text.append(s)
 
     print ("There are {} OOV words".format(unknow_count))
     print ("The length of processed text is {}".format(total))
@@ -123,62 +126,13 @@ def create_vocabulary(source_path, vocab_size=40000):
     frequency.append(float(sentence_count) / float(total))
     frequency.append(float(unknow_count) / float(total))
 
-    with open('../ProcessedData/frequency.txt', 'w') as freq:
+    with open('../ProcessedData/frequency_100000.txt', 'w') as freq:
         freq.write(json.dumps(frequency))
         freq.close()
-    with open('../ProcessedData/vocabulary.txt', 'w') as vocab:
+    with open('../ProcessedData/vocabulary_100000.txt', 'w') as vocab:
         vocab.write(json.dumps(vocab_idx_list))
         vocab.close()
-"""
-def save_index(data, path):
-    with open(path, 'w') as set:
-        for d in data:
-            set.writelines(json.dumps(d) + "\n")
-        set.close()
-"""
-
-"""
-    Initialise a word embedding from given word vector
-
-    @Param word_vec: pre trained word vector
-    @Param words: list of words
-
-    @Return d: A json object
-    @Return vocabulary: A lookup table with (token, index) pairs
-"""
-"""
-
-def word_vec_embedding(word_vec, vocabulary):
-
-
-    print("Create Embedding from word vectors")
-    knownWords.append(np.zeros((1, 300), dtype='float32'))  # word vector of <PAD>
-    knownWords.append(np.random.rand(1, 300).astype('float32'))  # word vector of <EOS>
-    knownWords.append(np.random.rand(1, 300).astype('float32'))  # word vector of <UNK>
-
-    for w in words:
-        try:
-            # Check whether the word is in vocabulary
-            index = vocabulary[w]
-        except KeyError:
-            # Check whether the word can be found in word vector
-            try:
-                vec = word_vec[w]
-                vocabulary[w] = knownWordCount
-                knownWords.append(np.reshape(np.array(vec, dtype='float32'), (1, 300)))
-                knownWordCount += 1
-            except KeyError:
-                # Add unknown words to unknown tokens
-                if w not in unknownTokens:
-                    unknownTokens.append(w)
-
-    print("{} words are not found in given word vectors".format(len(unknownTokens)))
-
-    # Random initialise the unknown tokens
-    for w in unknownTokens:
-        vocabulary[w] = knownWordCount
-        vec = np.random.rand(1, 300).astype('float32')
-        knownWordCount += 1
-        unknownWord.append(vec)
-    return {"known": knownWords, "unkown": unknownWord}, vocabulary
-"""
+    with open('../ProcessedData/sentences.txt_100000', 'w') as sentence:
+        for s in processed_text:
+            sentence.write(json.dumps(s))
+        sentence.close()
