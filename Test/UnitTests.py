@@ -1,5 +1,4 @@
 import tensorflow as tf
-import json
 from DataUtils import DataUtils
 from ModelUtils.Sampler.UniformSampler import UniformSampler
 from ModelUtils.Sampler.UnigramSampler import UnigramSampler
