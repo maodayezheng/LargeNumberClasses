@@ -30,7 +30,7 @@ class AlexEstimator(Estimator):
         # N
         element_loss = target_scores + tf.log(q) - tf.log(Z)
         loss = tf.reduce_mean(element_loss*mask)
-        return loss
+        return -loss
 
     def likelihood(self, x, h, q=None):
         """

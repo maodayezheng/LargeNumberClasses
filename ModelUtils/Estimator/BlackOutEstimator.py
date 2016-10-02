@@ -33,7 +33,7 @@ class BlackOutEstimator(Estimator):
         element_loss = target_scores - tf.log(q) + tf.reduce_sum(neg_scores, 1) -\
                        (tf.cast(tf.shape(samples)[0], dtype=tf.float32) + 1.0) * tf.log(Z)
         loss = tf.reduce_mean(element_loss * mask)
-        return loss
+        return -loss
 
     def likelihood(self, x, h, q=None):
         """
