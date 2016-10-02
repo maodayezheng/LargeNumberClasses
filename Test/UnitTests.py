@@ -1,5 +1,5 @@
 import tensorflow as tf
-from DataUtils import DataUtils
+from DataUtils.DataUtils import DataUtils
 from ModelUtils.Sampler.UniformSampler import UniformSampler
 from ModelUtils.Sampler.UnigramSampler import UnigramSampler
 from ModelUtils.Estimator.AlexEstimator import AlexEstimator
