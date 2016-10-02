@@ -174,6 +174,7 @@ def predict_next_word(params):
         """
         Feed the require inputs
         """
+        print("Get a batch at {} iteration".format(iteration))
         for j in range(batch_size):
             d = mini_bacth[j]
             if len(d) < sentence_len:
