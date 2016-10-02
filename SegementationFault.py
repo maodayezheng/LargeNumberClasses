@@ -1,6 +1,4 @@
 from __future__ import print_function
-import json
-import tensorflow as tf
 from ModelUtils.EmbeddingLayer import EmbeddingLayer
 from ModelUtils.GRU import GRU
 from ModelUtils.Sampler.UniformSampler import UniformSampler
