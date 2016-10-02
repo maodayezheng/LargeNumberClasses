@@ -185,7 +185,7 @@ def predict_next_word(params):
             _, exact = session.run([update, exact_log_like], feed_dict=input_dict)
         else:
             _, l = session.run([update, loss], feed_dict=input_dict)
-            if iteration % 100 is 0:
+            if iteration % 50 is 0:
                 print("The loss at iteration {} is {}".format(iteration, l))
 
 
