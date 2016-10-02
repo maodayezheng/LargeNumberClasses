@@ -153,7 +153,10 @@ def predict_next_word(params):
     batch = []
     with open('ProcessedData/sentences_100000.txt', 'r') as data:
         for d in data:
-            batch.append(json.loads(d))
+            d = json.loads(d)
+            if len(d) > sentence_len:
+                continue
+            batch.append(d)
         data.close()
     print("Get 100000 test sample")
     start_pos = 0
