@@ -14,11 +14,11 @@ from ModelUtils.Estimator.NegativeEstimator import NegativeEstimator
 
 def main():
     print("Dealing with Large number")
-    params = {"sampler_type": "uniform", "estimator_type": "IMP", "sample_size":250,
+    params = {"sampler_type": "uniform", "estimator_type": "IMP", "sample_size": 250,
               "batch_size": 25,
               "num_classes": 40000, "sentence_len": 70, "epoch_step": 100, "input_dim": 100, "hidden_dim": 100,
               "output_dim": 100,
-              "lamb": 0.0001, "l_rate": 0.004}
+              "lamb": 0.0001, "l_rate": 0.05}
     predict_next_word(params)
 
 
