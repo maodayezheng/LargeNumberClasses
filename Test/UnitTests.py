@@ -165,7 +165,7 @@ def SmallRNNTest(sess):
     print v
 
 print("Start unit tests")
-sess = tf.Session()
+#sess = tf.Session()
 #UniformSamplerUnitTest(sess)
 #UnigramSamplerUnitTest(sess)
 #GRUUnitTest(sess)
@@ -174,5 +174,6 @@ sess = tf.Session()
 #BernoulliEstimatorUnitTest(sess)
 #ImportanceEstimatorUnitTest(sess)
 #NegativeEstimatorUnitTest(sess)
-SmallRNNTest(sess)
+#SmallRNNTest(sess)
 #BatchUtilsUnitTest()
+DataUtilsUnitTest()

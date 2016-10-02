@@ -58,9 +58,6 @@ def create_vocabulary(source_path, vocab_size=40000):
     with open(source_path, "r") as text:
         for line in text:
             iters += 1
-            if iters % 100000 is 0:
-                print("processed {} sentence".format(iters))
-                break
             sentence = clean_str(line)
             sentence.pop()
             sentences.append(sentence)
@@ -126,13 +123,13 @@ def create_vocabulary(source_path, vocab_size=40000):
     frequency.append(float(sentence_count) / float(total))
     frequency.append(float(unknow_count) / float(total))
 
-    with open('../ProcessedData/frequency_100000.txt', 'w') as freq:
+    with open('../ProcessedData/frequency.txt', 'w') as freq:
         freq.write(json.dumps(frequency))
         freq.close()
-    with open('../ProcessedData/vocabulary_100000.txt', 'w') as vocab:
+    with open('../ProcessedData/vocabulary.txt', 'w') as vocab:
         vocab.write(json.dumps(vocab_idx_list))
         vocab.close()
-    with open('../ProcessedData/sentences_100000.txt', 'w') as sentence:
+    with open('../ProcessedData/sentences.txt', 'w') as sentence:
         for s in processed_text:
             sentence.write(json.dumps(s)+"\n")
         sentence.close()
