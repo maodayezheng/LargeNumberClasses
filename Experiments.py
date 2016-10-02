@@ -155,7 +155,7 @@ def predict_next_word(params):
         for d in data:
             batch.append(json.loads(d))
         data.close()
-
+    print("Get 100000 test sample")
     start_pos = 0
     iteration = 0
     input_dict = {}
@@ -178,9 +178,11 @@ def predict_next_word(params):
             input_dict[inputs[j].name] = d
 
         if iteration % epoch_step is 0:
-            _, exact, approx = session.run([update, exact_log_like], feed_dict=input_dict)
+            _, exact = session.run([update, exact_log_like], feed_dict=input_dict)
         else:
-            _ = session.run([update], feed_dict=input_dict)
+            _, l = session.run([update, loss], feed_dict=input_dict)
+            if iteration % 100 is 0:
+                print("The loss at iteration {} is {}".format(iteration, l))
 
 
 def exact_log_likelihood(x, h, embedding):
