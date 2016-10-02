@@ -153,9 +153,19 @@ def EmbeddingLayerUnitTest(sess):
     v = sess.run(v)
     assert(len(v) is 2), "The size of look up vectors is not consist"
 
+def SmallRNNTest(sess):
+    embedding = EmbeddingLayer(40, 10, "test")
+    cell = GRU(10, 10, 10, "test")
+    target = tf.constant([0, 3, 4], dtype=tf.int64)
+    s = tf.random_uniform([3, 10])
+    o, h = cell(embedding(target), s)
+    init = tf.initialize_all_variables()
+    sess.run(init)
+    v = sess.run(o)
+    print v
 
 print("Start unit tests")
-#sess = tf.Session()
+sess = tf.Session()
 #UniformSamplerUnitTest(sess)
 #UnigramSamplerUnitTest(sess)
 #GRUUnitTest(sess)
@@ -164,5 +174,5 @@ print("Start unit tests")
 #BernoulliEstimatorUnitTest(sess)
 #ImportanceEstimatorUnitTest(sess)
 #NegativeEstimatorUnitTest(sess)
-DataUtilsUnitTest()
+SmallRNNTest(sess)
 #BatchUtilsUnitTest()

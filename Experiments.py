@@ -14,8 +14,8 @@ from ModelUtils.Estimator.NegativeEstimator import NegativeEstimator
 
 def main():
     print("Dealing with Large number")
-    params = {"sampler_type": "uniform", "estimator_type": "IMP", "sample_size": [250, 500, 1000],
-              "batch_size": [100, 50, 25],
+    params = {"sampler_type": "uniform", "estimator_type": "IMP", "sample_size":250,
+              "batch_size": 25,
               "num_classes": 40000, "sentence_len": 70, "epoch_step": 100, "input_dim": 100, "hidden_dim": 100,
               "output_dim": 100,
               "lamb": 0.0001, "l_rate": 0.004}
@@ -49,15 +49,10 @@ def predict_next_word(params):
     Initialise the input nodes
     """
     inputs = []
-    paddings = []
-    sentences = []
     for i in range(batch_size):
-        s = tf.placeholder(tf.int32, shape=None, name="sentence_{}".format(i))
+        s = tf.placeholder(tf.int64, shape=None, name="sentence_{}".format(i))
         inputs.append(s)
-        padding = tf.placeholder(tf.int32, shape=None, name="padding_{}".format(i))
-        s_pad = tf.pad(s, padding)
-        sentences.append(s_pad)
-        paddings.append(padding)
+
     """
     Initialise sampler and loss estimator
     """
@@ -89,41 +84,54 @@ def predict_next_word(params):
     """
     Initialise the word embedding layer
     """
-    word_embedding = EmbeddingLayer("word", num_classes, input_dim)
+    word_embedding = EmbeddingLayer(num_classes, input_dim, "word")
 
     """
     Reshape the input sentences
     """
-    sentences = tf.squeeze(tf.pack(sentences))
-    ss, tc, sc = estimator.draw_samples(sentences, sentence_len)
+    sentences = tf.squeeze(tf.pack(inputs))
+    ss, tc, sc = estimator.draw_samples(sentences, 1)
     estimator.set_sample_weights(sc)
-    estimator.set_sample(ss)
+    estimator.set_sample(word_embedding(ss))
     sentences = tf.split(1, sentence_len, sentences)
-    mask = tf.zeros([batch_size, 1], dtype=tf.int32)
-    l = len(inputs)
-    loss = 0
-
+    mask = tf.zeros([batch_size, 1], dtype=tf.int64)
+    l = len(sentences)
     """
     Initialise Recurrent network
     """
     exact_log_like = 0.0
     cell = GRU(input_dim, hidden_dim, output_dim, "next-word")
-    state = tf.zeros([batch_size, hidden_dim], dtype=tf.float32, name="init_state")
+    init_state = tf.zeros([batch_size, hidden_dim], dtype=tf.float32, name="init_state")
+    state = init_state
     embedding = word_embedding.get_embedding()
     approx_log_like = 0.0
+    states = []
+    words = []
+    masks = []
     for i in range(l):
         mask_t = tf.cast(tf.not_equal(sentences[i], mask), tf.float32)
-        words = word_embedding(sentences[i])
-        state, output = cell(words, state)
+        word = word_embedding(sentences[i])
+        if i > 0:
+            words.append(word)
+        state, output = cell(word, state)
         state = state*mask_t
-        if i < l:
+        states.append(state)
+        masks.append(mask_t)
+    words.append(init_state)
+    states = tf.concat(0, states)
+    words = tf.concat(0, words)
+    masks = tf.concat(0, masks)
+    loss = estimator.loss(words, states, masks, q=tc)
+    """
+        if i < l-1:
             targets = word_embedding(sentences[i + 1])
-            loss += estimator.loss(targets, state, q=tc)*mask_t
+            loss += estimator.loss(targets, state, q=tc[i+1])*mask_t
             exact_log_like += exact_log_likelihood(targets, state, embedding)
-            approx_log_like += estimator.likelihood(targets, state)
+            #approx_log_like += estimator.likelihood(targets, state)
+    """
+    exact_log_like = exact_log_likelihood(words, states, embedding)
+    #approx_log_like = tf.reduce_mean(approx_log_like)
 
-    exact_log_like = tf.reduce_mean(exact_log_like)
-    approx_log_like = tf.reduce_mean(approx_log_like)
     """
     Training Loss
     """
@@ -141,8 +149,9 @@ def predict_next_word(params):
     """
     Get the training batch
     """
+    print("Start Training")
     batch = []
-    with open('../ProcessedData/sentences_100000.txt', 'r') as data:
+    with open('ProcessedData/sentences_100000.txt', 'r') as data:
         for d in data:
             batch.append(json.loads(d))
         data.close()
@@ -152,31 +161,31 @@ def predict_next_word(params):
     input_dict = {}
     while True:
         iteration += 1
-        end_pos = start_pos + batch_size - 1
+        end_pos = start_pos + batch_size
         # Stop criteria
         if end_pos > len(batch):
             break
         mini_bacth = batch[start_pos:end_pos]
-        start_pos += batch_size
+        start_pos = end_pos + 1
 
         """
         Feed the require inputs
         """
         for j in range(batch_size):
-            input_dict[inputs[j].name] = mini_bacth[j]
-            input_dict[paddings[j].name] = [[sentence_len-len(mini_bacth[j]), 0]]
+            d = mini_bacth[j]
+            if len(d) < sentence_len:
+                d = [0]*(sentence_len-len(d)) + d
+            input_dict[inputs[j].name] = d
 
         if iteration % epoch_step is 0:
-            _, exact, approx = session.run([update, exact_log_like, approx_log_like], feed_dict=dict)
+            _, exact, approx = session.run([update, exact_log_like], feed_dict=input_dict)
         else:
-            _ = session.run([update], feed_dict=dict)
+            _ = session.run([update], feed_dict=input_dict)
 
 
 def exact_log_likelihood(x, h, embedding):
-    print("exact log likelihood")
     target_scores = tf.reduce_sum(x * h, 1)
-    Z = tf.reduce_sum(embedding*h, 1)
-    return tf.log(target_scores/Z)
+    Z = tf.reduce_sum(tf.matmul(h, embedding, transpose_b=True), 1)
+    return tf.reduce_sum(tf.log(target_scores)) - tf.reduce_sum(tf.log(Z))
 
-if __name__ == "main":
-    main()
+main()

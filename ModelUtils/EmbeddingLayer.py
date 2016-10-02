@@ -24,6 +24,7 @@ class EmbeddingLayer(object):
         @Return o: The correspond vectors of targets
         """
         o = tf.nn.embedding_lookup(self.embedding_, targets)
+        o = tf.squeeze(o)
         return o
 
     def save_param(self, sess, path):

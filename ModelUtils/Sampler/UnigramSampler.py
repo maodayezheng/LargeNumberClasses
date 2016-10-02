@@ -13,6 +13,6 @@ class UnigramSampler(Sampler):
         ss, _, _ = tf.nn.fixed_unigram_candidate_sampler(tf.reshape(targets, (-1, 1)),
                                                          num_targets, self.num_samples_, self.unique_,
                                                          self.num_classes_, unigrams=self.proposed_dist_, distortion=distort)
-        tc = tf.pow(tf.nn.embedding_lookup(self.proposed_dist_, targets), distort)
-        sc = tf.pow(tf.nn.embedding_lookup(self.proposed_dist_, ss), distort)
+        tc = tf.squeeze(tf.pow(tf.nn.embedding_lookup(self.proposed_dist_, targets), distort))
+        sc = tf.squeeze(tf.pow(tf.nn.embedding_lookup(self.proposed_dist_, ss), distort))
         return ss, tc, sc

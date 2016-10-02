@@ -4,7 +4,7 @@ from .Estimator import Estimator
 
 
 class BernoulliEstimator(Estimator):
-    def loss(self, x, h, q=None):
+    def loss(self, x, h, mask, q=None):
         """
             Calculate the estimate loss of bernoulli sampling approximation
 
@@ -26,7 +26,10 @@ class BernoulliEstimator(Estimator):
         samples_scores = tf.matmul(h, samples, transpose_b=True)
         # N
         Z = tf.exp(target_scores) + tf.reduce_mean(tf.exp(samples_scores) / weights, 1)
-        loss = tf.reduce_mean(target_scores - tf.log(Z))
+        # The loss of each element in target
+        # N
+        element_loss = target_scores - tf.log(Z)
+        loss = tf.reduce_mean(element_loss*mask)
         return loss
 
     def likelihood(self, x, h, q=None):

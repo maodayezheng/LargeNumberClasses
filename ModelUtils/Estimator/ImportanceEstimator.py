@@ -4,7 +4,7 @@ from .Estimator import Estimator
 
 
 class ImportanceEstimator(Estimator):
-    def loss(self, x, h, q=None):
+    def loss(self, x, h, mask, q=None):
         """
             Calculate the estimate loss of Importance sampling approximation
 
@@ -26,7 +26,10 @@ class ImportanceEstimator(Estimator):
         samples_scores = tf.matmul(h, samples, transpose_b=True)
         # N
         Z = tf.reduce_sum(tf.exp(samples_scores) / weights, 1)
-        loss = tf.reduce_mean(target_scores - tf.log(q) - tf.log(Z))
+        # The loss of each element in target
+        # N
+        element_loss = target_scores - tf.log(q) -tf.log(Z)
+        loss = tf.reduce_mean(element_loss * mask)
         return loss
         # return target_scores, q, Z
         # return x, h, weights, samples

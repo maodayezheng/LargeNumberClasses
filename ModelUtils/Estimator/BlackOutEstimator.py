@@ -4,7 +4,7 @@ from .Estimator import Estimator
 
 
 class BlackOutEstimator(Estimator):
-    def loss(self, x, h, q=None):
+    def loss(self, x, h, mask, q=None):
         """
             Calculate the estimate loss of blackout approximation
 
@@ -28,8 +28,11 @@ class BlackOutEstimator(Estimator):
         Z = tf.exp(target_scores) / q + tf.reduce_sum(tf.exp(samples_scores) / weights, 1)
         # N x K
         neg_scores = tf.log(tf.reshape(Z, (-1, 1)) - tf.exp(samples_scores) / weights)
-        loss = tf.reduce_mean(target_scores - tf.log(q) + tf.reduce_sum(neg_scores, 1) -
-                              (tf.cast(tf.shape(samples)[0], dtype=tf.float32) + 1.0) * tf.log(Z))
+        # The loss of each element in target
+        # N
+        element_loss = target_scores - tf.log(q) + tf.reduce_sum(neg_scores, 1) -\
+                       (tf.cast(tf.shape(samples)[0], dtype=tf.float32) + 1.0) * tf.log(Z)
+        loss = tf.reduce_mean(element_loss * mask)
         return loss
 
     def likelihood(self, x, h, q=None):

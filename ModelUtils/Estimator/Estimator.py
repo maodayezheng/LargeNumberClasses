@@ -14,12 +14,13 @@ class Estimator(object):
         self.weights_ = None
         self.samples_ = None
 
-    def loss(self, x, h):
+    def loss(self, x, h, mask):
         """
         Abstract method requires to be implement by sub classes
 
         @Param x: The target words or batch
         @Param h: This is usually the output of neural network
+        @Param mask: The mask that is used to filter losss of some element
         """
         raise Exception("Can not call abstract method loss in Estimator")
 
@@ -44,8 +45,8 @@ class Estimator(object):
         @Return sample_prob: The probability of sample occurrence
         """
         samples, target_prob, sample_prob = self.sampler_.draw_sample(target, num_targets)
-        target_prob = tf.expand_dims(target_prob, 0)
-        sample_prob = tf.expand_dims(sample_prob, 0)
+        #target_prob = tf.expand_dims(target_prob, 0)
+        #sample_prob = tf.expand_dims(sample_prob, 0)
         return samples, target_prob, sample_prob
 
     def set_sample(self, samples):

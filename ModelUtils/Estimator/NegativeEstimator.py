@@ -4,7 +4,7 @@ from .Estimator import Estimator
 
 
 class NegativeEstimator(Estimator):
-    def loss(self, x, h):
+    def loss(self, x, h, mask, q=None):
         """
         Calculate the estimate loss of negative sampling approximation
 
@@ -17,8 +17,8 @@ class NegativeEstimator(Estimator):
         target_scores = tf.reduce_sum(x * h, 1)
         # N x K
         samples_scores = tf.matmul(h, samples, transpose_b=True)
-        return tf.reduce_mean(tf.log(tf.nn.sigmoid(target_scores))) - \
-            tf.reduce_mean(tf.reduce_sum(tf.log(tf.nn.sigmoid(samples_scores)), 1))
+        return tf.reduce_mean(tf.log(tf.nn.sigmoid(target_scores))*mask) - \
+            tf.reduce_mean(tf.reduce_sum(tf.log(tf.nn.sigmoid(samples_scores)), 1)*mask)
 
     def likelihood(self, x, h):
         """
