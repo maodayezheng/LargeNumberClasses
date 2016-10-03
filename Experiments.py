@@ -109,20 +109,20 @@ def predict_next_word(params):
     words = []
     masks = []
     for i in range(l):
-        mask_t = tf.cast(tf.not_equal(sentences[i], mask), tf.float32)
+        mask_t = tf.not_equal(sentences[i], mask), tf.float32
         word = word_embedding(sentences[i])
         if i > 0:
             words.append(word)
         state, output = cell(word, state)
-        state = state*mask_t
         states.append(state)
         masks.append(mask_t)
     words.append(init_state)
     states = tf.concat(0, states)
     words = tf.concat(0, words)
     masks = tf.concat(0, masks)
+    states = tf.boolean_mask(states, masks)
+    words = tf.boolean_mask(words, masks)
     loss = estimator.loss(words, states, masks, q=tc)
-    exact_log_like = exact_log_likelihood(words, states, embedding)
     #approx_log_like = tf.reduce_mean(approx_log_like)
 
     """
@@ -171,10 +171,5 @@ def predict_next_word(params):
             if iteration % 50 is 0:
                 print("The loss at iteration {} is {}".format(iteration, l))
 
-
-def exact_log_likelihood(x, h, embedding):
-    target_scores = tf.reduce_sum(x * h, 1)
-    Z = tf.reduce_sum(tf.matmul(h, embedding, transpose_b=True), 1)
-    return tf.reduce_mean(target_scores - tf.log(Z))
 
 main()

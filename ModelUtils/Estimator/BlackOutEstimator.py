@@ -7,7 +7,7 @@ class BlackOutEstimator(Estimator):
     def __init__(self, *args, **kwargs):
         super(BlackOutEstimator, self).__init__(extra=10, *args, **kwargs)
 
-    def loss(self, x, h, mask, q=None):
+    def loss(self, x, h, q=None):
         """
             Calculate the estimate loss of blackout approximation
 
@@ -38,27 +38,7 @@ class BlackOutEstimator(Estimator):
         # N
         element_loss = target_scores - tf.log(q) + tf.reduce_sum(neg_scores, 1) -\
                        (tf.cast(tf.shape(samples_scores)[1], dtype=tf.float32) + 1.0) * tf.log(self.Z_)
-        loss = tf.reduce_mean(element_loss * mask)
+        loss = tf.reduce_mean(element_loss)
         return -loss
 
-    def likelihood(self, x, h, q=None):
-        """
-            Calculate the estimate likelihood of blackout approximation
-
-            @Param x: The target word or batch
-            @Param h: This is usually the output of neural network
-            @Param q: The Weight of target
-        """
-        """
-        if self.target_exp_ is None:
-            self.target_exp_ = tf.exp(tf.reduce_sum(x * h, 1)) / q
-        if self.Z_ is None:
-            samples = self.get_samples()
-            weights = self.get_sample_weights()
-            self.Z_ = self.target_exp_ + tf.reduce_sum(tf.exp(tf.matmul(h, samples, transpose_b=True))/weights, 1)
-
-        log_likelihood = tf.log(self.target_exp_) - tf.log(self.Z_)
-        return tf.reduce_mean(log_likelihood)
-        """
-        print("BlackOut likelihood")
 

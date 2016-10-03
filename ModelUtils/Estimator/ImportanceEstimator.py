@@ -4,7 +4,7 @@ from .Estimator import Estimator
 
 
 class ImportanceEstimator(Estimator):
-    def loss(self, x, h, mask, q=None):
+    def loss(self, x, h, q=None):
         """
             Calculate the estimate loss of Importance sampling approximation
 
@@ -30,26 +30,5 @@ class ImportanceEstimator(Estimator):
         # The loss of each element in target
         # N
         element_loss = target_scores - tf.log(q) -tf.log(self.Z_)
-        loss = tf.reduce_mean(element_loss * mask)
+        loss = tf.reduce_mean(element_loss)
         return -loss
-        # return target_scores, q, Z
-        # return x, h, weights, samples
-
-    def likelihood(self, x, h, q=None):
-        """
-            Calculate the estimate likelihood of importance sampling approximation
-
-            @Param x: The target word or batch
-            @Param h: This is usually the output of neural network
-            @Param q: The Weight of target
-        """
-        if self.target_exp_ is None:
-            self.target_exp_ = tf.exp(tf.reduce_sum(x * h, 1))
-        if self.Z_ is None:
-            samples = self.get_samples()
-            weights = self.get_sample_weights()
-            self.Z_ = tf.reduce_sum(tf.exp(tf.matmul(h, samples, transpose_b=True)) / weights, 1)
-
-        log_likelihood = tf.log(self.target_exp_) - tf.log(self.Z_)
-        return tf.reduce_mean(log_likelihood)
-

@@ -7,13 +7,15 @@ class AlexEstimator(Estimator):
     def __init__(self, *args, **kwargs):
         super(AlexEstimator, self).__init__(extra=10, *args, **kwargs)
 
-    def loss(self, x, h, mask, q=None):
+    def loss(self, x, h, q=None):
         """
             Calculate the estimate loss of Alex approach approximation
 
             @Param x(NxD): The target word or batch
             @Param h(NxD): This is usually the output of neural network
             @Param q(N): The Weight of target
+
+            @Return loss: The estimate loss
         """
         # KE
         weights = self.get_sample_weights()
@@ -36,25 +38,6 @@ class AlexEstimator(Estimator):
         # The loss of each element in target
         # N
         element_loss = target_scores + tf.log(q) - tf.log(self.Z_)
-        loss = tf.reduce_mean(element_loss*mask)
+        loss = tf.reduce_mean(element_loss)
         return -loss
 
-    def likelihood(self, x, h, q=None):
-        """
-            Calculate the estimate likelihood of Alex approach approximation
-
-            @Param x: The target word or batch
-            @Param h: This is usually the output of neural network
-            @Param q: The Weight of target
-
-            @Return the approximate average log likelihood
-        """
-        if self.target_exp_ is None:
-            self.target_exp_ = tf.exp(tf.reduce_sum(x * h, 1))*q
-        if self.Z_ is None:
-            samples = self.get_samples()
-            self.Z_ = self.target_exp_ + tf.reduce_sum(tf.exp(tf.matmul(h, samples, transpose_b=True)), 1)
-        print("likelihood")
-
-        log_likelihood = tf.log(self.target_exp_) - tf.log(self.Z_)
-        return tf.reduce_mean(log_likelihood)

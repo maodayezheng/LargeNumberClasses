@@ -17,24 +17,29 @@ class Estimator(object):
         self.target_exp_ = None
         self.Z_ = None
 
-    def loss(self, x, h, mask):
+    def loss(self, x, h):
         """
         Abstract method requires to be implement by sub classes
 
         @Param x: The target words or batch
         @Param h: This is usually the output of neural network
-        @Param mask: The mask that is used to filter losss of some element
         """
         raise Exception("Can not call abstract method loss in Estimator")
 
-    def likelihood(self, x, h):
+    def log_likelihood(self, x, h, embedding):
         """
-        Abstract method requires to be implement by sub classes
+            Abstract method requires to be implement by sub classes
 
-        @Param x: The target words or batch
-        @Param h: This is usually the output of neural network
+            @Param x: The target words or batch
+            @Param h: This is usually the output of neural network
+            @Param embedding: The embedding vectors of all words
+
+            @Return log_like: The exact log likelihood average over words
         """
-        raise Exception("Can not call abstract method likelihood in Estimator")
+        target_scores = tf.reduce_sum(x * h, 1)
+        Z = tf.reduce_sum(tf.matmul(h, embedding, transpose_b=True), 1)
+        log_like = tf.reduce_mean((target_scores-tf.log(Z)))
+        return log_like
 
     def draw_samples(self, target, num_targets):
         """
@@ -44,12 +49,10 @@ class Estimator(object):
         @Param num_targets: the length of target words or target batch
 
         @Return samples: The index of samples
-        @Return target_prob: The probability of target occurrence
-        @Return sample_prob: The probability of sample occurrence
+        @Return target_prob: The probability of target probability
+        @Return sample_prob: The probability of sample probability
         """
         samples, target_prob, sample_prob = self.sampler_.draw_sample(target, num_targets + self.extra)
-        #target_prob = tf.expand_dims(target_prob, 0)
-        #sample_prob = tf.expand_dims(sample_prob, 0)
         return samples, target_prob, sample_prob
 
     def get_unique(self, targets, samples, sample_scores):
