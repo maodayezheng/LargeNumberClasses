@@ -70,6 +70,7 @@ class Estimator(object):
         K = tf.shape(samples)[0] - self.extra
         # Indicator with 0 if they coincide
         ind = tf.cast(tf.not_equal(tf.reshape(targets, (-1, 1)), tf.reshape(samples, (1, -1))), tf.int32)
+        print(ind.get_shape())
         # The first K samples which are not equal to the taret
         _, i = tf.nn.top_k(ind, sorted=True, k=K)
         i = tf.reshape(i, [-1])
