@@ -25,7 +25,7 @@ class ImportanceEstimator(Estimator):
         self.target_exp_ = tf.exp(target_scores)
         # N x K
         samples_scores = tf.matmul(h, samples, transpose_b=True)
-        m = tf.reduce_max(samples_scores, 1)
+        m = tf.stop_gradient(tf.maximum(target_scores, tf.reduce_max(samples_scores, 1)))
         target_scores -= m
         samples_scores -= m
         # N
