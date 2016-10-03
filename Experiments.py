@@ -1,5 +1,6 @@
 from __future__ import print_function
 import json
+import random
 import tensorflow as tf
 from ModelUtils.EmbeddingLayer import EmbeddingLayer
 from ModelUtils.GRU import GRU
@@ -151,26 +152,17 @@ def predict_next_word(params):
             batch.append(d)
         data.close()
     print("Get 100000 test sample")
-    start_pos = 0
-    iteration = 0
     input_dict = {}
+    iteration = 0
     while True:
-        iteration += 1
-        end_pos = start_pos + batch_size
-        # Stop criteria
-        if end_pos > len(batch):
-            break
-        mini_bacth = batch[start_pos:end_pos]
-        start_pos = end_pos + 1
-
+        iteration +=1
         """
-        Feed the require inputs
+           randomly pick a data point from batch
         """
-        for j in range(batch_size):
-            d = mini_bacth[j]
-            if len(d) < sentence_len:
-                d = [0]*(sentence_len-len(d)) + d
-            input_dict[inputs[j].name] = d
+        for i in range(batch_size):
+            d = random.choice(batch)
+            d = [0]*(sentence_len-len(d)) + d
+            input_dict[inputs[i].name] = d
 
         if iteration % epoch_step is 0:
             _, exact = session.run([update, exact_log_like], feed_dict=input_dict)
@@ -183,6 +175,6 @@ def predict_next_word(params):
 def exact_log_likelihood(x, h, embedding):
     target_scores = tf.reduce_sum(x * h, 1)
     Z = tf.reduce_sum(tf.matmul(h, embedding, transpose_b=True), 1)
-    return tf.reduce_sum(tf.log(target_scores)) - tf.reduce_sum(tf.log(Z))
+    return tf.reduce_mean(target_scores - tf.log(Z))
 
 main()
