@@ -16,7 +16,7 @@ from ModelUtils.Estimator.NegativeEstimator import NegativeEstimator
 def main():
     print("Dealing with Large number")
     params = {"sampler_type": "uniform", "estimator_type": "IMP", "sample_size": 250,
-              "batch_size": 25,
+              "batch_size": 10,
               "num_classes": 40004, "sentence_len": 70, "epoch_step": 100, "input_dim": 100, "hidden_dim": 100,
               "output_dim": 100,
               "lamb": 0.001, "l_rate": 0.02}
