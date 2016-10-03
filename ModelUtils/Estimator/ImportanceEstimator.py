@@ -30,7 +30,7 @@ class ImportanceEstimator(Estimator):
         log_q = tf.check_numerics(tf.log(q), "each q")
         target_scores -= log_q
         samples_scores -= tf.reshape(log_weights, (1, -1))
-        max_t = tf.reduce_max(samples_scores, 1)
+        max_t = tf.reduce_max(tf.concat(1, (tf.reshape(target_scores, (-1, 1)), samples_scores)), 1)
         max_t = tf.Print(max_t, [tf.shape(max_t)], message="The shape of max_t is :")
         m = tf.stop_gradient(max_t)
         target_scores -= m
