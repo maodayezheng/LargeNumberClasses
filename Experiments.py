@@ -109,7 +109,7 @@ def predict_next_word(params):
     words = []
     masks = []
     for i in range(l):
-        mask_t = tf.not_equal(sentences[i], mask), tf.float32
+        mask_t = tf.not_equal(sentences[i], mask)
         word = word_embedding(sentences[i])
         if i > 0:
             words.append(word)
@@ -156,7 +156,7 @@ def predict_next_word(params):
     input_dict = {}
     iteration = 0
     while True:
-        iteration +=1
+        iteration += 1
         """
            randomly pick a data point from batch
         """
