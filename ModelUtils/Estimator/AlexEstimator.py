@@ -7,7 +7,7 @@ class AlexEstimator(Estimator):
     def __init__(self, *args, **kwargs):
         super(AlexEstimator, self).__init__(extra=10, *args, **kwargs)
 
-    def loss(self, x, h, q=None):
+    def loss(self, x, h, q=None, eps=1e-9):
         """
             Calculate the estimate loss of Alex approach approximation
 
@@ -32,12 +32,18 @@ class AlexEstimator(Estimator):
         # N x K
         samples_scores = self.get_unique(x, samples, samples_scores)
         # N
-        self.target_exp_ = tf.exp(target_scores) * q
+        target_scores += tf.log(tf.reshape(q, [-1]))
+        # Conditioning
+        max_t = tf.reduce_max(tf.concat(1, (tf.reshape(target_scores, (-1, 1)), samples_scores)), 1)
+        m = tf.stop_gradient(max_t)
+        target_scores -= m
+        samples_scores -= tf.reshape(m, (-1, 1))
+        # N
+        self.target_exp_ = tf.exp(target_scores)
         self.Z_ = self.target_exp_ + tf.reduce_sum(tf.exp(samples_scores), 1)
-
         # The loss of each element in target
         # N
-        element_loss = target_scores + tf.log(q) - tf.log(self.Z_)
+        element_loss = target_scores - tf.log(self.Z_ + eps)
         loss = tf.reduce_mean(element_loss)
         return -loss
 

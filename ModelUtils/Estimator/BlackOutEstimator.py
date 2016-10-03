@@ -7,7 +7,7 @@ class BlackOutEstimator(Estimator):
     def __init__(self, *args, **kwargs):
         super(BlackOutEstimator, self).__init__(extra=10, *args, **kwargs)
 
-    def loss(self, x, h, q=None):
+    def loss(self, x, h, q=None, eps=1e-9):
         """
             Calculate the estimate loss of blackout approximation
 
@@ -25,19 +25,27 @@ class BlackOutEstimator(Estimator):
             raise ValueError("samples must be set")
         # N
         target_scores = tf.reduce_sum(x * h, 1)
-        self.target_exp_ = tf.exp(target_scores) / q
+        target_scores -= tf.log(tf.reshape(q, [-1]))
         # N x KE
         samples_scores = tf.matmul(h, samples, transpose_b=True)
         # N x K
         samples_scores = self.get_unique(x, samples, samples_scores)
+        samples_scores -= tf.log(weights)
+        # Conditioning
+        max_t = tf.reduce_max(tf.concat(1, (tf.reshape(target_scores, (-1, 1)), samples_scores)), 1)
+        m = tf.stop_gradient(max_t)
+        target_scores -= m
+        samples_scores -= tf.reshape(m, (-1, 1))
         # N
-        self.Z_ = self.target_exp_ + tf.reduce_sum(tf.exp(samples_scores) / weights, 1)
+        self.target_exp_ = tf.exp(target_scores)
+        # N
+        self.Z_ = self.target_exp_ + tf.reduce_sum(tf.exp(samples_scores), 1)
         # N x K
-        neg_scores = tf.log(tf.reshape(self.Z_, (-1, 1)) - tf.exp(samples_scores) / weights)
+        neg_scores = tf.log(tf.reshape(self.Z_, (-1, 1)) - tf.exp(samples_scores) + eps)
         # The loss of each element in target
         # N
         element_loss = target_scores - tf.log(q) + tf.reduce_sum(neg_scores, 1) -\
-                       (tf.cast(tf.shape(samples_scores)[1], dtype=tf.float32) + 1.0) * tf.log(self.Z_)
+            (tf.cast(tf.shape(samples_scores)[1], dtype=tf.float32) + 1.0) * tf.log(self.Z_ + eps)
         loss = tf.reduce_mean(element_loss)
         return -loss
 
