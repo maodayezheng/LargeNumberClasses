@@ -4,6 +4,9 @@ from .Estimator import Estimator
 
 
 class BernoulliEstimator(Estimator):
+    def __init__(self, *args, **kwargs):
+        super(BernoulliEstimator, self).__init__(extra=10, *args, **kwargs)
+
     def loss(self, x, h, mask, q=None):
         """
             Calculate the estimate loss of bernoulli sampling approximation
@@ -16,15 +19,17 @@ class BernoulliEstimator(Estimator):
         weights = self.get_sample_weights()
         if weights is None:
             raise ValueError("sample weights must be set")
-        # KxD
+        # KExD
         samples = self.get_samples()
         if samples is None:
             raise ValueError("samples must be set")
         # N
         target_scores = tf.reduce_sum(x * h, 1)
         self.target_exp_ = tf.exp(target_scores)
-        # N x K
+        # N x KE
         samples_scores = tf.matmul(h, samples, transpose_b=True)
+        # N x K
+        samples_scores = self.get_unique(x, samples, samples_scores)
         # N
         self.Z_ = self.target_exp_ + tf.reduce_mean(tf.exp(samples_scores) / weights, 1)
         # The loss of each element in target
