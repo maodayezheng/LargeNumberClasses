@@ -25,6 +25,7 @@ class ImportanceEstimator(Estimator):
         self.target_exp_ = tf.exp(target_scores)
         # N x K
         samples_scores = tf.matmul(h, samples, transpose_b=True)
+        samples_scores = tf.Print(samples_scores, [tf.shape(samples_scores)],message="The shape of sample score is : ")
         log_weights = tf.check_numerics(tf.log(weights), "each weights")
         log_q = tf.check_numerics(tf.log(q), "each q")
         target_scores -= log_q
