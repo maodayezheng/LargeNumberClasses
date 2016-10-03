@@ -28,7 +28,7 @@ class ImportanceEstimator(Estimator):
         log_weights = tf.check_numerics(tf.log(weights), "each weights")
         log_q = tf.check_numerics(tf.log(q), "each q")
         target_scores -= log_q
-        samples_scores -= log_weights
+        samples_scores -= tf.reshape(log_weights, (1, -1))
         m = tf.stop_gradient(tf.maximum(target_scores, tf.reduce_max(samples_scores, 1)))
         target_scores -= m
         samples_scores -= tf.reshape(m, (-1, 1))
