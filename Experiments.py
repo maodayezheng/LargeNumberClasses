@@ -120,9 +120,11 @@ def predict_next_word(params):
     states = tf.concat(0, states)
     words = tf.concat(0, words)
     masks = tf.concat(0, masks)
+    masks = tf.reshape(masks, [batch_size*sentence_len])
     states = tf.boolean_mask(states, masks)
     words = tf.boolean_mask(words, masks)
-    loss = estimator.loss(words, states, masks, q=tc)
+    tc = tf.boolean_mask(tc, masks)
+    loss = estimator.loss(words, states, q=tc)
     exact_log_like = estimator.log_likelihood(words, states, embedding)
     #approx_log_like = tf.reduce_mean(approx_log_like)
 
