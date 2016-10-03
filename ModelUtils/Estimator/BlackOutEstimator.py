@@ -29,7 +29,7 @@ class BlackOutEstimator(Estimator):
         # N x KE
         samples_scores = tf.matmul(h, samples, transpose_b=True)
         # N x K
-        samples_scores = self.get_unique(x, samples, samples_scores)
+        samples_scores = self.get_unique(samples_scores)
         samples_scores -= tf.log(weights)
         # Conditioning
         max_t = tf.reduce_max(tf.concat(1, (tf.reshape(target_scores, (-1, 1)), samples_scores)), 1)

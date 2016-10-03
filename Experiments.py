@@ -91,9 +91,6 @@ def predict_next_word(params):
     Reshape the input sentences
     """
     sentences = tf.squeeze(tf.pack(inputs))
-    ss, tc, sc = estimator.draw_samples(sentences, 1)
-    estimator.set_sample_weights(sc)
-    estimator.set_sample(word_embedding(ss))
     sentences = tf.split(1, sentence_len, sentences)
     mask = tf.zeros([batch_size, 1], dtype=tf.int64)
     l = len(sentences)
@@ -120,6 +117,9 @@ def predict_next_word(params):
     words = tf.concat(0, words)
     masks = tf.concat(0, masks)
     masks = tf.reshape(masks, [batch_size*sentence_len])
+    ss, tc, sc = estimator.draw_samples(sentences, 1, masks)
+    estimator.set_sample_weights(sc)
+    estimator.set_sample(word_embedding(ss))
     states = tf.boolean_mask(states, masks)
     words = tf.boolean_mask(words, masks)
     tc = tf.boolean_mask(tc, masks)

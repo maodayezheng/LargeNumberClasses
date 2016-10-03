@@ -16,6 +16,7 @@ class Estimator(object):
         self.samples_ = None
         self.target_exp_ = None
         self.Z_ = None
+        self.bm = None
 
     def loss(self, x, h):
         """
@@ -41,7 +42,7 @@ class Estimator(object):
         log_like = tf.reduce_mean((target_scores-tf.log(Z)))
         return log_like
 
-    def draw_samples(self, target, num_targets):
+    def draw_samples(self, target, num_targets, mask):
         """
         draw sample set and sample weights for approximation
 
@@ -53,9 +54,28 @@ class Estimator(object):
         @Return sample_prob: The probability of sample probability
         """
         samples, target_prob, sample_prob = self.sampler_.draw_sample(target, num_targets + self.extra)
+        N = tf.shape(target)[0]
+        K = tf.shape(samples)[0] - self.extra
+        print(K.set_shape(1))
+        # Indicator with 0 if they coincide
+        print(target.get_shape())
+        print(samples.get_shape())
+        ind = tf.cast(tf.not_equal(tf.reshape(target, (-1, 1)), tf.reshape(samples, (1, -1))), tf.int32)
+        print(ind.get_shape())
+        # The first K samples which are not equal to the taret
+        _, i = tf.nn.top_k(ind, sorted=True, k=K)
+        i = tf.reshape(i, [-1])
+        r = tf.range(0, tf.shape(target)[0])
+        print(r.get_shape())
+        tile = tf.tile(r, K)
+        r = tf.reshape(tf.transpose(tf.reshape(tile, (K, N))), [-1])
+        print(r.get_shape())
+        coords = tf.transpose(tf.pack([r, i]))
+        self.bm = tf.cast(tf.sparse_to_dense(coords, ind.get_shape(), 1), tf.bool)
+
         return samples, target_prob, sample_prob
 
-    def get_unique(self, targets, samples, sample_scores):
+    def get_unique(self,sample_scores):
         """
         Given a K'=K + self.extra samples, and their scores returns the NxK matrix of scores
         of K samples which do not coincide with the targets.
@@ -66,19 +86,7 @@ class Estimator(object):
         """
         if self.extra == 0:
             return sample_scores
-        N = tf.shape(targets)[0]
-        K = tf.shape(samples)[0] - self.extra
-        # Indicator with 0 if they coincide
-        ind = tf.cast(tf.not_equal(tf.reshape(targets, (-1, 1)), tf.reshape(samples, (1, -1))), tf.int32)
-        print(ind.get_shape())
-        # The first K samples which are not equal to the taret
-        _, i = tf.nn.top_k(ind, sorted=True, k=K)
-        i = tf.reshape(i, [-1])
-        r = tf.range(0, tf.shape(targets)[0])
-        r = tf.reshape(tf.transpose(tf.reshape(tf.tile(r, [K]), (K, N))), [-1])
-        coords = tf.transpose(tf.pack([r, i]))
-        bm = tf.cast(tf.sparse_to_dense(coords, ind.get_shape(), 1), tf.bool)
-        return tf.reshape(tf.boolean_mask(sample_scores, bm), (N, -1))
+        return tf.reshape(tf.boolean_mask(sample_scores, self.bm), (tf.shape(sample_scores)[0] -1))
 
     def set_sample(self, samples):
         self.samples_ = samples

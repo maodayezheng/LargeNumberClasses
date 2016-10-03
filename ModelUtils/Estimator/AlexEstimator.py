@@ -30,7 +30,7 @@ class AlexEstimator(Estimator):
         # N x KE
         samples_scores = tf.matmul(h, samples, transpose_b=True)
         # N x K
-        samples_scores = self.get_unique(x, samples, samples_scores)
+        samples_scores = self.get_unique(samples_scores)
         # N
         target_scores += tf.log(tf.reshape(q, [-1]))
         # Conditioning
