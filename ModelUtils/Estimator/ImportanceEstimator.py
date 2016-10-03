@@ -45,7 +45,7 @@ class ImportanceEstimator(Estimator):
 
         # The loss of each element in target
         # N
-        Z = tf.Print(self.Z_, [tf.reduce_max(self.Z_), tf.reduce_min(self.Z_)], message="The max and min Z")
+        #Z = tf.Print(self.Z_, [tf.reduce_max(self.Z_), tf.reduce_min(self.Z_)], message="The max and min Z")
         element_loss = tf.check_numerics(target_scores, message="Target score ") - tf.check_numerics(tf.log(tf.check_numerics(Z, message="The Z")), message="log Z")
         element_loss = tf.check_numerics(element_loss, "each element_loss")
         loss = tf.reduce_mean(element_loss)
