@@ -24,13 +24,15 @@ class ImportanceEstimator(Estimator):
         target_scores = tf.reduce_sum(x * h, 1)
         self.target_exp_ = tf.exp(target_scores)
         # N x K
-        samples_scores = tf.check_numerics(tf.matmul(h, samples, transpose_b=True), message="The sample score is")
+        samples_scores = tf.matmul(h, samples, transpose_b=True)
         # N
-        self.Z_ = tf.check_numerics(tf.reduce_sum(tf.check_numerics(tf.check_numerics(tf.exp(samples_scores), message="EXP score") / weights, "each Z "), 1), message="The Z is ")
+        exp_weight = tf.exp(samples_scores) / weights
+        check = tf.Assert(tf.is_finite(exp_weight), [exp_weight])
+        exp_weight = tf.with_dependencies([check], exp_weight)
+        self.Z_ = tf.reduce_sum(tf.check_numerics(exp_weight, "each Z "), 1)
 
         # The loss of each element in target
         # N
-        log_Z = tf.check_numerics(tf.log(self.Z_), message="The log Z")
-        element_loss = target_scores - tf.log(q) - log_Z
+        element_loss = target_scores - tf.log(q) - tf.log(self.Z_)
         loss = tf.reduce_mean(element_loss)
         return -loss
