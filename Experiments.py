@@ -104,7 +104,6 @@ def predict_next_word(params):
     init_state = tf.zeros([batch_size, hidden_dim], dtype=tf.float32, name="init_state")
     state = init_state
     embedding = word_embedding.get_embedding()
-    approx_log_like = 0.0
     states = []
     words = []
     masks = []
@@ -124,9 +123,11 @@ def predict_next_word(params):
     states = tf.boolean_mask(states, masks)
     words = tf.boolean_mask(words, masks)
     tc = tf.boolean_mask(tc, masks)
-    loss = estimator.loss(words, states, q=tc)
+    words = tf.check_numerics(words, message="The words is Nan")
+    states = tf.check_numerics(states, message="The state is Nan")
+    tc = tf.check_numerics(tc, message="The tc is Nan")
+    loss = tf.check_numerics(estimator.loss(words, states, q=tc), message="The loss is Nan")
     exact_log_like = estimator.log_likelihood(words, states, embedding)
-    #approx_log_like = tf.reduce_mean(approx_log_like)
 
     """
     Training Loss
@@ -154,10 +155,11 @@ def predict_next_word(params):
                 continue
             batch.append(d)
         data.close()
-    print("Get 100000 test sample")
+    print("Finished getting batch")
     input_dict = {}
     iteration = 0
-    while True:
+    tigger = True
+    while tigger:
         iteration += 1
         """
            randomly pick a data point from batch
@@ -168,7 +170,7 @@ def predict_next_word(params):
             input_dict[inputs[i].name] = d
 
         if iteration % epoch_step is 0:
-            _, exact = session.run([update, exact_log_like], feed_dict=input_dict)
+            _, exact, l = session.run([update, exact_log_like, loss], feed_dict=input_dict)
         else:
             _, l = session.run([update, loss], feed_dict=input_dict)
             if iteration % 50 is 0:
