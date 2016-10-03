@@ -123,10 +123,10 @@ def predict_next_word(params):
     states = tf.boolean_mask(states, masks)
     words = tf.boolean_mask(words, masks)
     tc = tf.boolean_mask(tc, masks)
-    words = tf.check_numerics(words, message="The words is Nan")
-    states = tf.check_numerics(states, message="The state is Nan")
-    tc = tf.check_numerics(tc, message="The tc is Nan")
-    loss = tf.check_numerics(estimator.loss(words, states, q=tc), message="The loss is Nan")
+    words = tf.check_numerics(words, message="The words is ")
+    states = tf.check_numerics(states, message="The state is ")
+    tc = tf.check_numerics(tc, message="The tc is ")
+    loss = tf.check_numerics(estimator.loss(words, states, q=tc), message="The loss is ")
     exact_log_like = estimator.log_likelihood(words, states, embedding)
 
     """
