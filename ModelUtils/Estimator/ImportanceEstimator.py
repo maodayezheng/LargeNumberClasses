@@ -14,6 +14,7 @@ class ImportanceEstimator(Estimator):
         """
         # K
         weights = self.get_sample_weights()
+        tf.Assert(tf.equal(weights, 0.0), [weights])
         if weights is None:
             raise ValueError("sample weights must be set")
         # KxD
@@ -27,8 +28,6 @@ class ImportanceEstimator(Estimator):
         samples_scores = tf.matmul(h, samples, transpose_b=True)
         # N
         exp_weight = tf.exp(samples_scores) / weights
-        check = tf.Assert(tf.is_finite(exp_weight), [exp_weight])
-        exp_weight = tf.with_dependencies([check], exp_weight)
         self.Z_ = tf.reduce_sum(tf.check_numerics(exp_weight, "each Z "), 1)
 
         # The loss of each element in target
