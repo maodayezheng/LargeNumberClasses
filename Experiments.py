@@ -94,6 +94,7 @@ def predict_next_word(params):
     sentences = tf.split(1, sentence_len, sentences)
     mask = tf.zeros([batch_size, 1], dtype=tf.int64)
     l = len(sentences)
+
     """
     Initialise Recurrent network
     """
@@ -142,7 +143,6 @@ def predict_next_word(params):
     session = tf.Session()
     init = tf.initialize_all_variables()
     session.run(init)
-
     """
     Get the training batch
     """
