@@ -27,7 +27,7 @@ class ImportanceEstimator(Estimator):
         samples_scores = tf.matmul(h, samples, transpose_b=True)
         m = tf.stop_gradient(tf.maximum(target_scores, tf.reduce_max(samples_scores, 1)))
         target_scores -= m
-        samples_scores -= m.reshape((-1, 1))
+        samples_scores -= tf.reshape(m, (-1, 1))
         # N
         exp_weight = tf.exp(samples_scores) / weights
         self.Z_ = tf.reduce_sum(tf.check_numerics(exp_weight, "each Z "), 1)
