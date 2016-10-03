@@ -14,7 +14,6 @@ class ImportanceEstimator(Estimator):
         """
         # K
         weights = self.get_sample_weights()
-        tf.Assert(tf.equal(weights, 0.0), [weights])
         if weights is None:
             raise ValueError("sample weights must be set")
         # KxD
