@@ -25,10 +25,12 @@ class AlexEstimator(Estimator):
         # N x K
         samples_scores = tf.matmul(h, samples, transpose_b=True)
         # N
-        Z = tf.exp(target_scores) * q + tf.reduce_sum(tf.exp(samples_scores), 1)
+        self.target_exp_ = tf.exp(target_scores) * q
+        self.Z_ = self.target_exp_ + tf.reduce_sum(tf.exp(samples_scores), 1)
+
         # The loss of each element in target
         # N
-        element_loss = target_scores + tf.log(q) - tf.log(Z)
+        element_loss = target_scores + tf.log(q) - tf.log(self.Z_)
         loss = tf.reduce_mean(element_loss*mask)
         return -loss
 
@@ -39,5 +41,15 @@ class AlexEstimator(Estimator):
             @Param x: The target word or batch
             @Param h: This is usually the output of neural network
             @Param q: The Weight of target
+
+            @Return the approximate average log likelihood
         """
+        if self.target_exp_ is None:
+            self.target_exp_ = tf.exp(tf.reduce_sum(x * h, 1))*q
+        if self.Z_ is None:
+            samples = self.get_samples()
+            self.Z_ = self.target_exp_ + tf.reduce_sum(tf.exp(tf.matmul(h, samples, transpose_b=True)), 1)
         print("likelihood")
+
+        log_likelihood = tf.log(self.target_exp_) - tf.log(self.Z_)
+        return tf.reduce_mean(log_likelihood)

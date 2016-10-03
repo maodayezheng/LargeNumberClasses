@@ -16,7 +16,7 @@ def main():
     print("Dealing with Large number")
     params = {"sampler_type": "uniform", "estimator_type": "IMP", "sample_size": 250,
               "batch_size": 25,
-              "num_classes": 40000, "sentence_len": 70, "epoch_step": 100, "input_dim": 100, "hidden_dim": 100,
+              "num_classes": 40004, "sentence_len": 70, "epoch_step": 100, "input_dim": 100, "hidden_dim": 100,
               "output_dim": 100,
               "lamb": 0.0001, "l_rate": 0.05}
     predict_next_word(params)
@@ -60,7 +60,7 @@ def predict_next_word(params):
     if sampler_type is "uniform":
         sampler = UniformSampler(num_classes, sample_size)
     elif sampler_type is "unigram":
-        with open("../ProcessedData/frequency_100000.txt", 'r') as freq:
+        with open("../ProcessedData/frequency.txt", 'r') as freq:
             p_dist = json.loads(freq.read())
             sampler = UnigramSampler(num_classes, sample_size, proposed_dist=p_dist)
             freq.close()
@@ -99,7 +99,6 @@ def predict_next_word(params):
     """
     Initialise Recurrent network
     """
-    exact_log_like = 0.0
     cell = GRU(input_dim, hidden_dim, output_dim, "next-word")
     init_state = tf.zeros([batch_size, hidden_dim], dtype=tf.float32, name="init_state")
     state = init_state
@@ -122,13 +121,6 @@ def predict_next_word(params):
     words = tf.concat(0, words)
     masks = tf.concat(0, masks)
     loss = estimator.loss(words, states, masks, q=tc)
-    """
-        if i < l-1:
-            targets = word_embedding(sentences[i + 1])
-            loss += estimator.loss(targets, state, q=tc[i+1])*mask_t
-            exact_log_like += exact_log_likelihood(targets, state, embedding)
-            #approx_log_like += estimator.likelihood(targets, state)
-    """
     exact_log_like = exact_log_likelihood(words, states, embedding)
     #approx_log_like = tf.reduce_mean(approx_log_like)
 
@@ -151,7 +143,7 @@ def predict_next_word(params):
     """
     print("Start Training")
     batch = []
-    with open('ProcessedData/sentences_100000.txt', 'r') as data:
+    with open('ProcessedData/sentences.txt', 'r') as data:
         for d in data:
             d = json.loads(d)
             if len(d) > sentence_len:

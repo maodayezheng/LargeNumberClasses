@@ -22,16 +22,17 @@ class BlackOutEstimator(Estimator):
             raise ValueError("samples must be set")
         # N
         target_scores = tf.reduce_sum(x * h, 1)
+        self.target_exp_ = tf.exp(target_scores) / q
         # N x K
         samples_scores = tf.matmul(h, samples, transpose_b=True)
         # N
-        Z = tf.exp(target_scores) / q + tf.reduce_sum(tf.exp(samples_scores) / weights, 1)
+        self.Z_ = self.target_exp_ + tf.reduce_sum(tf.exp(samples_scores) / weights, 1)
         # N x K
-        neg_scores = tf.log(tf.reshape(Z, (-1, 1)) - tf.exp(samples_scores) / weights)
+        neg_scores = tf.log(tf.reshape(self.Z_, (-1, 1)) - tf.exp(samples_scores) / weights)
         # The loss of each element in target
         # N
         element_loss = target_scores - tf.log(q) + tf.reduce_sum(neg_scores, 1) -\
-                       (tf.cast(tf.shape(samples)[0], dtype=tf.float32) + 1.0) * tf.log(Z)
+                       (tf.cast(tf.shape(samples)[0], dtype=tf.float32) + 1.0) * tf.log(self.Z_)
         loss = tf.reduce_mean(element_loss * mask)
         return -loss
 
@@ -43,4 +44,16 @@ class BlackOutEstimator(Estimator):
             @Param h: This is usually the output of neural network
             @Param q: The Weight of target
         """
-        print("likelihood")
+        """
+        if self.target_exp_ is None:
+            self.target_exp_ = tf.exp(tf.reduce_sum(x * h, 1)) / q
+        if self.Z_ is None:
+            samples = self.get_samples()
+            weights = self.get_sample_weights()
+            self.Z_ = self.target_exp_ + tf.reduce_sum(tf.exp(tf.matmul(h, samples, transpose_b=True))/weights, 1)
+
+        log_likelihood = tf.log(self.target_exp_) - tf.log(self.Z_)
+        return tf.reduce_mean(log_likelihood)
+        """
+        print("BlackOut likelihood")
+

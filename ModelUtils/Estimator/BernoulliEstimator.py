@@ -22,13 +22,14 @@ class BernoulliEstimator(Estimator):
             raise ValueError("samples must be set")
         # N
         target_scores = tf.reduce_sum(x * h, 1)
+        self.target_exp_ = tf.exp(target_scores)
         # N x K
         samples_scores = tf.matmul(h, samples, transpose_b=True)
         # N
-        Z = tf.exp(target_scores) + tf.reduce_mean(tf.exp(samples_scores) / weights, 1)
+        self.Z_ = self.target_exp_ + tf.reduce_mean(tf.exp(samples_scores) / weights, 1)
         # The loss of each element in target
         # N
-        element_loss = target_scores - tf.log(Z)
+        element_loss = target_scores - tf.log(self.Z_)
         loss = tf.reduce_mean(element_loss*mask)
         return -loss
 
@@ -39,5 +40,14 @@ class BernoulliEstimator(Estimator):
             @Param x: The target word or batch
             @Param h: This is usually the output of neural network
             @Param q: The Weight of target
+
+            @Return the approximate average log likelihood
         """
+        if self.target_exp_ is None:
+            self.target_exp_ = tf.exp(tf.reduce_sum(x * h, 1))
+        if self.Z_ is None:
+            samples = self.get_samples()
+            self.Z_ = self.target_exp_ + tf.reduce_mean(tf.exp(tf.matmul(h, samples, transpose_b=True)), 1)
         print("likelihood")
+        log_likelihood = tf.log(self.target_exp_) - tf.log(self.Z_)
+        return tf.reduce_mean(log_likelihood)
