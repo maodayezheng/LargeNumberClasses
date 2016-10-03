@@ -14,6 +14,8 @@ class Estimator(object):
         self.extra = extra
         self.weights_ = None
         self.samples_ = None
+        self.target_exp_ = None
+        self.Z_ = None
 
     def loss(self, x, h, mask):
         """
