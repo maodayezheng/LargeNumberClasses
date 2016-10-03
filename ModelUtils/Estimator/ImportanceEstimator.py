@@ -26,7 +26,7 @@ class ImportanceEstimator(Estimator):
         # N x K
         samples_scores = tf.check_numerics(tf.matmul(h, samples, transpose_b=True), message="The sample score is")
         # N
-        self.Z_ = tf.check_numerics(tf.reduce_sum(tf.exp(samples_scores) / weights, 1), message="The Z is ")
+        self.Z_ = tf.check_numerics(tf.reduce_sum(tf.check_numerics(tf.exp(samples_scores) / weights , "each Z "), 1), message="The Z is ")
 
         # The loss of each element in target
         # N
