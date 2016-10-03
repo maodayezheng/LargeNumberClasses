@@ -61,7 +61,7 @@ def predict_next_word(params):
     if sampler_type is "uniform":
         sampler = UniformSampler(num_classes, sample_size)
     elif sampler_type is "unigram":
-        with open("../ProcessedData/frequency.txt", 'r') as freq:
+        with open("../ProcessedData/frequency_100000.txt", 'r') as freq:
             p_dist = json.loads(freq.read())
             sampler = UnigramSampler(num_classes, sample_size, proposed_dist=p_dist)
             freq.close()
@@ -123,6 +123,7 @@ def predict_next_word(params):
     states = tf.boolean_mask(states, masks)
     words = tf.boolean_mask(words, masks)
     loss = estimator.loss(words, states, masks, q=tc)
+    exact_log_like = estimator.log_likelihood(words, states, embedding)
     #approx_log_like = tf.reduce_mean(approx_log_like)
 
     """
@@ -144,7 +145,7 @@ def predict_next_word(params):
     """
     print("Start Training")
     batch = []
-    with open('ProcessedData/sentences.txt', 'r') as data:
+    with open('ProcessedData/sentences_100000.txt', 'r') as data:
         for d in data:
             d = json.loads(d)
             if len(d) > sentence_len:
