@@ -41,7 +41,7 @@ class ImportanceEstimator(Estimator):
         samples_scores -= tf.reshape(m, (-1, 1))
         # N
         exp_weight = tf.exp(samples_scores)
-        self.Z_ = tf.reduce_sum(tf.check_numerics(exp_weight, "each Z"), 1)
+        self.Z_ = tf.reduce_sum(tf.check_numerics(exp_weight, "each Z"), 1) + 1e-8
 
         # The loss of each element in target
         # N
