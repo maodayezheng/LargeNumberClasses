@@ -29,6 +29,6 @@ class ImportanceEstimator(Estimator):
         self.Z_ = tf.reduce_sum(tf.exp(samples_scores) / weights, 1)
         # The loss of each element in target
         # N
-        element_loss = target_scores - tf.log(q) -tf.log(self.Z_)
+        element_loss = target_scores - tf.log(q) - tf.log(self.Z_)
         loss = tf.reduce_mean(element_loss)
         return -loss

@@ -17,8 +17,9 @@ class NegativeEstimator(Estimator):
         target_scores = tf.reduce_sum(x * h, 1)
         # N x K
         samples_scores = tf.matmul(h, samples, transpose_b=True)
-        loss = tf.reduce_mean(tf.log(tf.nn.sigmoid(target_scores))) - \
-               tf.reduce_mean(tf.reduce_sum(tf.log(tf.nn.sigmoid(samples_scores)), 1))
 
+        element_loss = tf.log(tf.nn.sigmoid(target_scores)) - \
+            tf.reduce_sum(tf.log(tf.nn.sigmoid(samples_scores)), 1)
+        loss = tf.reduce_mean(element_loss)
         return -loss
 
