@@ -4,7 +4,7 @@ from .Estimator import Estimator
 
 
 class ImportanceEstimator(Estimator):
-    def loss(self, x, h, q=None):
+    def loss(self, x, h, q=None, eps=1e-9):
         """
             Calculate the estimate loss of Importance sampling approximation
 
@@ -41,12 +41,12 @@ class ImportanceEstimator(Estimator):
         samples_scores -= tf.reshape(m, (-1, 1))
         # N
         exp_weight = tf.exp(samples_scores)
-        self.Z_ = tf.reduce_sum(tf.check_numerics(exp_weight, "each Z"), 1) + 1e-8
+        self.Z_ = tf.reduce_sum(tf.check_numerics(exp_weight, "each Z"), 1)
 
         # The loss of each element in target
         # N
         #Z = tf.Print(self.Z_, [tf.reduce_max(self.Z_), tf.reduce_min(self.Z_)], message="The max and min Z")
-        element_loss = tf.check_numerics(target_scores, message="Target score ") - tf.check_numerics(tf.log(tf.check_numerics(self.Z_, message="The Z")), message="log Z")
+        element_loss = tf.check_numerics(target_scores, message="Target score ") - tf.check_numerics(tf.log(tf.check_numerics(self.Z_ + eps, message="The Z")), message="log Z")
         element_loss = tf.check_numerics(element_loss, "each element_loss")
         loss = tf.reduce_mean(element_loss)
         return -loss
