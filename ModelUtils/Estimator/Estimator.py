@@ -11,6 +11,7 @@ class Estimator(object):
         @Param embedding_layer: The embedding_layer for looking up word vector
         """
         self.sampler_ = sampler
+        self.sampler_.num_samples_ += extra
         self.extra = extra
         self.weights_ = None
         self.samples_ = None
@@ -53,40 +54,46 @@ class Estimator(object):
         @Return target_prob: The probability of target probability
         @Return sample_prob: The probability of sample probability
         """
-        samples, target_prob, sample_prob = self.sampler_.draw_sample(target, num_targets + self.extra)
+        samples, target_prob, sample_prob = self.sampler_.draw_sample(target, num_targets)
+        # samples = tf.Print(samples, [tf.shape(samples)], "Samples shape:")
+        # targets = tf.Print(target, [tf.shape(target)], "Targets shape:")
+        # mask = tf.Print(mask, [tf.shape(mask)], "Mask shape:")
+        target = tf.boolean_mask(tf.reshape(target, [-1]), mask)
+        # targets = tf.Print(target, [tf.shape(target)], "Targets2 shape:")
         N = tf.shape(target)[0]
         K = tf.shape(samples)[0] - self.extra
-        print(K.set_shape(1))
+
         # Indicator with 0 if they coincide
-        print(target.get_shape())
-        print(samples.get_shape())
         ind = tf.cast(tf.not_equal(tf.reshape(target, (-1, 1)), tf.reshape(samples, (1, -1))), tf.int32)
-        print(ind.get_shape())
-        # The first K samples which are not equal to the taret
+        # ind = tf.Print(ind, [tf.shape(ind)], "Ind shape:")
+        # The first K samples which are not equal to the target
         _, i = tf.nn.top_k(ind, sorted=True, k=K)
+        # i = tf.Print(i, [tf.shape(ind)], "I shape:")
         i = tf.reshape(i, [-1])
         r = tf.range(0, tf.shape(target)[0])
-        print(r.get_shape())
-        tile = tf.tile(r, K)
-        r = tf.reshape(tf.transpose(tf.reshape(tile, (K, N))), [-1])
-        print(r.get_shape())
+        r = tf.reshape(tf.transpose(tf.reshape(tf.tile(r, [K]), (K, N))), [-1])
         coords = tf.transpose(tf.pack([r, i]))
-        self.bm = tf.cast(tf.sparse_to_dense(coords, ind.get_shape(), 1), tf.bool)
-
+        # coords = tf.Print(coords, [tf.shape(coords)], "Coords shape:")
+        self.bm = tf.cast(tf.sparse_to_dense(coords, tf.shape(ind), 1), tf.bool)
+        # self.bm = tf.Print(self.bm, [tf.shape(self.bm)], "Bm shape:")
         return samples, target_prob, sample_prob
 
-    def get_unique(self,sample_scores):
+    def get_unique(self, sample_scores):
         """
         Given a K'=K + self.extra samples, and their scores returns the NxK matrix of scores
         of K samples which do not coincide with the targets.
-        :param targets(N): The target words
-        :param samples(K'): Initial extra samples included
-        :param sample_scores(NxK'):
+        :param sample_scores(NxK')
         :return:
         """
         if self.extra == 0:
             return sample_scores
-        return tf.reshape(tf.boolean_mask(sample_scores, self.bm), (tf.shape(sample_scores)[0] -1))
+        # N =
+        # sample_scores =
+        # sample_scores = tf.Print(sample_scores, [tf.shape(sample_scores)], "SS shape:")
+        # a = tf.boolean_mask(sample_scores, self.bm)
+        # a = tf.Print(sample_scores, [tf.shape(a)], "A shape:")
+        return tf.reshape(tf.boolean_mask(sample_scores, self.bm), (tf.shape(sample_scores)[0],
+                                                                    self.sampler_.num_samples_ - self.extra))
 
     def set_sample(self, samples):
         self.samples_ = samples
