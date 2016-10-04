@@ -1,4 +1,6 @@
 import tensorflow as tf
+
+
 class Sampler(object):
     def __init__(self, num_classes, num_samples, distortion=1.0, proposed_dist=None, unique=True):
         """
@@ -13,6 +15,7 @@ class Sampler(object):
         self.num_samples_ = num_samples
         self.unique_ = unique
         self.proposed_dist_ = proposed_dist
+        print(distortion)
         self.freq_embedding = tf.constant(proposed_dist[1:])
         self.distortion_ = distortion
 

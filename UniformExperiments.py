@@ -14,16 +14,16 @@ from ModelUtils.Estimator.NegativeEstimator import NegativeEstimator
 
 def main():
     print("Dealing with Large number unigram test")
-    estimator_types = ["BLA", "BER", "IMP", "ALEX", "NEG"]
-    params = {"sampler_type": "uniform", "sample_size": 250,
+    estimator_types =["BLA", "BER", "IMP", "ALEX", "NEG"]
+    params = {"sampler_type": "unigram", "sample_size": 250,
               "batch_size": 10,
-              "num_classes": 28094, "sentence_len": 70, "epoch_step": 100, "input_dim": 100, "hidden_dim": 100,
+              "sentence_len": 70, "epoch_step": 100, "input_dim": 100, "hidden_dim": 100,
               "output_dim": 100,
               "lamb": 0.001, "l_rate": 0.02}
 
     for e in estimator_types:
-        params["estimator_type"] = e
-        predict_next_word(params)
+         params["estimator_type"] = e
+         predict_next_word(params)
 
 
 def predict_next_word(params):
@@ -45,8 +45,8 @@ def predict_next_word(params):
     output_dim = params["output_dim"]
     lamb = params["lamb"]
     l_rate = params["l_rate"]
-    num_classes = params["num_classes"]
-    print("Runing the " + estimator_type + "Estimator Test")
+    print("Runing the "+estimator_type + "Estimator Test")
+    num_classes = 0
     # Initialise the input nodes
     inputs = []
     for i in range(batch_size):
@@ -55,12 +55,11 @@ def predict_next_word(params):
 
     # Initialise sampler and loss estimator
     sampler = None
-
     with open("ProcessedData/frequency_100000.txt", 'r') as freq:
-        p_dist = json.loads(freq.read())
-        sampler = UnigramSampler(num_classes-1, sample_size, proposed_dist=p_dist, distortion=0.0)
-        freq.close()
-
+            p_dist = json.loads(freq.read())
+            num_classes = len(p_dist)
+            sampler = UnigramSampler(num_classes-1, sample_size, proposed_dist=p_dist, distortion=0.0)
+            freq.close()
     estimator = None
     if estimator_type is "BER":
         estimator = BernoulliEstimator(sampler)
@@ -89,35 +88,35 @@ def predict_next_word(params):
     init_state = tf.zeros([batch_size, hidden_dim], dtype=tf.float32, name="init_state")
     state = init_state
     embedding = word_embedding.get_embedding()
-    states = []
-    words = []
-    masks = []
+    target_states = []
+    target_words = []
+    target_masks = []
     for i in range(l):
         mask_t = tf.not_equal(sentences[i], mask)
         word = word_embedding(sentences[i])
-        if i > 0:
-            words.append(word)
         state, output = cell(word, state)
-        states.append(state)
-        masks.append(mask_t)
-    words.append(init_state)
+        if i < l - 1:
+            target_words.append(word)
+            target_states.append(state)
+            target_masks.append(mask_t)
 
     # Masking the parameters
-    states = tf.concat(0, states)
-    words = tf.concat(0, words)
-    masks = tf.concat(0, masks)
-    masks = tf.reshape(masks, [batch_size*sentence_len])
+    target_states = tf.concat(0, target_states)
+    target_words = tf.concat(0, target_words)
+    target_masks = tf.concat(0, target_masks)
+    masks = tf.reshape(target_masks, [batch_size*(sentence_len - 1)])
 
     # Draw samples
-    ss, tc, sc = estimator.draw_samples(sentences, 1, masks)
+
+    targets = tf.boolean_mask(tf.reshape(sentences, [-1, 1]), masks)
+    target_states = tf.boolean_mask(target_states, masks)
+    target_words = tf.boolean_mask(target_words, masks)
+    ss, tc, sc = estimator.draw_samples(targets, 1)
     estimator.set_sample_weights(sc)
     estimator.set_sample(word_embedding(ss))
-    states = tf.boolean_mask(states, masks)
-    words = tf.boolean_mask(words, masks)
-    tc = tf.boolean_mask(tc, masks)
     # Estimate loss
-    loss = tf.check_numerics(estimator.loss(words, states, q=tc), message="The loss is ")
-    exact_log_like = estimator.log_likelihood(words, states, embedding)
+    loss = tf.check_numerics(estimator.loss(target_words, target_states, q=tc), message="The loss is ")
+    exact_log_like = estimator.log_likelihood(target_words, target_states, embedding)
 
     # Training Loss
     l2 = lamb * (cell.l2_regular())
@@ -125,7 +124,8 @@ def predict_next_word(params):
     update = tf.train.GradientDescentOptimizer(l_rate).minimize(objective)
 
     # Initialise Variables
-    session = tf.Session()
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.6)
+    session = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
     init = tf.initialize_all_variables()
     session.run(init)
 
@@ -145,20 +145,20 @@ def predict_next_word(params):
     loss_check = iteration + epoch_step
     average_loss = 0
     average_loss_save = []
-    exact_log_like_save =[]
+    exact_log_like_save = []
     while iteration < 40000:
         iteration += 1
 
         # Randomly pick a data point from batch
         for i in range(batch_size):
             d = random.choice(batch)
-            d = [0]*(sentence_len-len(d)) + d
+            d = [0] * (sentence_len - len(d)) + d
             input_dict[inputs[i].name] = d
 
         if iteration % epoch_step is 0:
             loss_check += epoch_step
             _, exact, l = session.run([update, exact_log_like, loss], feed_dict=input_dict)
-            average_loss = (average_loss+l)/10
+            average_loss = (average_loss + l) / 10
             average_loss_save.append(average_loss)
             exact_log_like_save.append(exact)
             print("At iteration {}, the average estimate loss is {}, the exact log like is {}".format(iteration,
@@ -173,10 +173,11 @@ def predict_next_word(params):
     word_embedding.save_param(session, "ModelParams/")
     cell.save_param(session, "ModelParams/")
 
-    with open("ModelParams/" + sampler_type + "_" + estimator_type + "_aver_loss.txt", "r") as save_estimate_loss:
-        save_estimate_loss.write(json.dumps(average_loss_save))
+    with open("ModelParams/"+sampler_type+"_"+estimator_type+"_aver_loss.txt", "r") as save_estimate_loss:
+            save_estimate_loss.write(json.dumps(average_loss_save))
 
     with open("ModelParams/" + sampler_type + "_" + estimator_type + "_exact_loss.txt", "r") as save_estimate_loss:
         save_estimate_loss.write(json.dumps(exact_log_like_save))
+
 
 main()
