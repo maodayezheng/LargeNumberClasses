@@ -42,3 +42,25 @@ class AlexEstimator(Estimator):
         loss = tf.reduce_mean(element_loss)
         return -loss
 
+    def log_likelihood(self, x, h, embedding):
+        """
+            Abstract method requires to be implement by sub classes
+
+            @Param x: The target words or batch
+            @Param h: This is usually the output of neural network
+            @Param embedding: The embedding vectors of all words
+
+            @Return log_like: The exact log likelihood average over words
+        """
+        if self.target_score_ is None:
+            self.target_score_ = tf.reduce_sum(x * h, 1)
+
+        samples_scores = tf.matmul(h, embedding, transpose_b=True)
+        sample_q = tf.pow(self.sampler_.proposed_dist_, self.sampler_.distortion_)
+        sample_q /= tf.reduce_sum(sample_q)
+        # !!! sample_scores += tf.log(sample_q)
+        target_score = self.target_score_ # !!! + tf.log(tf.reshape(q, [-1]))
+        Z = tf.reduce_sum(tf.exp(samples_scores), 1)
+        log_like = tf.reduce_mean((target_score-tf.log(Z)))
+        return log_like
+
