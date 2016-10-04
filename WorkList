@@ -3,5 +3,5 @@ Uniform: Pass
 BLA: Pass
 NEG: Fail
 IMP: Pass
-BER: Fail ?
-ALEX:
+BER: Pass ?
+ALEX: Pass
