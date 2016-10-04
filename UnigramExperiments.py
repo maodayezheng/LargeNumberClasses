@@ -19,11 +19,18 @@ def main():
               "batch_size": 10,
               "sentence_len": 70, "epoch_step": 100, "input_dim": 100, "hidden_dim": 100,
               "output_dim": 100,
-              "lamb": 0.001, "l_rate": 0.02}
+              "lamb": 0.001, "l_rate": 0.02, 'distortion': 1.0}
 
     for e in estimator_types:
          params["estimator_type"] = e
          predict_next_word(params)
+
+    estimator_types =["IMP", "BLA", "BER"]
+    params['distortion'] = 0.75
+
+    for e in estimator_types:
+        params["estimator_type"] = e
+        predict_next_word(params)
 
 
 def predict_next_word(params):
@@ -45,6 +52,7 @@ def predict_next_word(params):
     output_dim = params["output_dim"]
     lamb = params["lamb"]
     l_rate = params["l_rate"]
+    distortion = params["distortion"]
     print("Runing the "+estimator_type + "Estimator Test")
     num_classes = 0
     # Initialise the input nodes
@@ -58,7 +66,7 @@ def predict_next_word(params):
     with open("ProcessedData/frequency_100000.txt", 'r') as freq:
             p_dist = json.loads(freq.read())
             num_classes = len(p_dist)
-            sampler = UnigramSampler(num_classes-1, sample_size, proposed_dist=p_dist)
+            sampler = UnigramSampler(num_classes-1, sample_size, proposed_dist=p_dist,distortion=distortion)
             freq.close()
 
     estimator = None
@@ -146,7 +154,7 @@ def predict_next_word(params):
     loss_check = iteration + epoch_step
     average_loss = 0
     exact_log_like_save = []
-    while iteration < 40000:
+    while iteration < 10:
         iteration += 1
 
         # Randomly pick a data point from batch
@@ -172,7 +180,7 @@ def predict_next_word(params):
     word_embedding.save_param(session, "ModelParams/")
     cell.save_param(session, "ModelParams/")
 
-    with open("ModelParams/"+sampler_type+"_"+estimator_type+"_exact_like.txt", "w") as save_exact:
+    with open("ModelParams/"+sampler_type+"_"+estimator_type+"_"+str(distortion)+"_exact_like.txt", "w") as save_exact:
         save_exact.write(json.dumps(exact_log_like_save))
 
 
