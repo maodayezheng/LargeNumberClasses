@@ -1,6 +1,6 @@
 from __future__ import print_function
 import tensorflow as tf
-from Estimator import Estimator
+from .Estimator import Estimator
 
 
 class NegativeEstimator(Estimator):
