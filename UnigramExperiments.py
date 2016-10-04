@@ -109,7 +109,6 @@ def predict_next_word(params):
     # Draw samples
 
     targets = tf.boolean_mask(tf.reshape(sentences, [-1, 1]), masks)
-    targets = tf.Print(targets, [tf.reduce_min(targets)], message="After mask")
     target_states = tf.boolean_mask(target_states, masks)
     target_words = tf.boolean_mask(target_words, masks)
     ss, tc, sc = estimator.draw_samples(targets, 1)
