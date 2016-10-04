@@ -41,7 +41,8 @@ class Estimator(object):
         if self.target_score_ is None:
             self.target_score_ = tf.reduce_sum(x * h, 1)
         samples_scores = tf.matmul(h, embedding, transpose_b=True)
-        target_score, samples_scores = self.clip_likelihood(self.target_score_, samples_scores)
+        target_score = self.target_score_
+        #target_score, samples_scores = self.clip_likelihood(self.target_score_, samples_scores)
         Z = tf.reduce_sum(tf.exp(samples_scores), 1)
         log_like = tf.reduce_mean((target_score-tf.log(Z)))
         return log_like
