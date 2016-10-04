@@ -46,7 +46,7 @@ def predict_next_word(params):
     lamb = params["lamb"]
     l_rate = params["l_rate"]
     num_classes = params["num_classes"]
-
+    print("Runing the "+estimator_type+ "Estimator Test")
     # Initialise the input nodes
     inputs = []
     for i in range(batch_size):
