@@ -17,7 +17,7 @@ def main():
     estimator_types =["BLA", "BER", "IMP", "ALEX", "NEG"]
     params = {"sampler_type": "unigram", "sample_size": 250,
               "batch_size": 10,
-              "num_classes": 28094, "sentence_len": 70, "epoch_step": 100, "input_dim": 100, "hidden_dim": 100,
+              "sentence_len": 70, "epoch_step": 100, "input_dim": 100, "hidden_dim": 100,
               "output_dim": 100,
               "lamb": 0.001, "l_rate": 0.02}
 
@@ -45,8 +45,8 @@ def predict_next_word(params):
     output_dim = params["output_dim"]
     lamb = params["lamb"]
     l_rate = params["l_rate"]
-    num_classes = params["num_classes"]
     print("Runing the "+estimator_type + "Estimator Test")
+    num_classes = 0
     # Initialise the input nodes
     inputs = []
     for i in range(batch_size):
@@ -57,6 +57,7 @@ def predict_next_word(params):
     sampler = None
     with open("ProcessedData/frequency_100000.txt", 'r') as freq:
             p_dist = json.loads(freq.read())
+            num_classes = len(p_dist)
             sampler = UnigramSampler(num_classes-1, sample_size, proposed_dist=p_dist)
             freq.close()
 

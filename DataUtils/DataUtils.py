@@ -11,6 +11,7 @@ import re
 def clean_str(s):
     """
     Remove unexpected tokens from string
+    Includes the stopping words in English, and symbols
     Original taken from https://github.com/yoonkim/CNN_sentence/blob/master/process_data.py
 
     @Param s: A input string to clean
@@ -67,10 +68,41 @@ def create_vocabulary(source_path, vocab_size=40000):
         text.close()
 
     dist = FreqDist(words)
-    dist.plot()
     top_n = dist.most_common()
     vocab_idx_list = {}
     frequency = [0.0]
+
+    # Discard the word which occurs less than ocr_threshold times
+    ocr_threshold = 3
+    finding = True
+    satisfy_set = []
+    unsatisfy_set =[]
+    search_set = top_n
+    l = len(search_set)
+    print("The is {} unqiue tokens".format(l))
+    target_idx = l / 2
+    while finding:
+        # No more words in search set
+        if len(search_set) is 0:
+            break
+        # If the largest occurrence in search set is less than threshold
+        w, o = search_set[0]
+        if o < ocr_threshold:
+            break
+        # Check the first half of search set
+        target_word, target_ocr = search_set[target_idx]
+        if target_ocr > ocr_threshold:
+            satisfy_set += search_set[0:target_idx]
+            search_set = search_set[target_idx+1:]
+            target_idx = len(search_set)/2
+        else:
+            unsatisfy_set += search_set[target_idx:]
+            search_set = search_set[0:target_idx]
+            target_idx = len(search_set)/2
+
+    top_n = satisfy_set
+    print("The is {} words in vocabulary".format(len(top_n)))
+    print("There is {} words removed from vocabulary".format(len(unsatisfy_set)))
     for i in range(len(top_n)):
         w, f = top_n[i]
         vocab_idx_list[w] = i+1
@@ -92,38 +124,30 @@ def create_vocabulary(source_path, vocab_size=40000):
     processed_text = []
     unknow_count = 0
     total = 0
-    unk_word_list = []
     for sentence in sentences:
         s = [start_symbol_idx]
         idx = unk_symbol_idx
         for w in sentence:
-            total += 1
             idx = unk_symbol_idx
             # check whether the word w is in the vocabulary
             try:
                 # if w in the vocabulary then add the idx of w
+                total += 1
                 idx = vocab_idx_list[w]
                 s.append(idx)
             except KeyError:
-                # if w is not in vocabulary then insert the unk_symbol_idx
-                s.append(idx)
                 unknow_count += 1
 
         s.append(end_symbol_idx)
         processed_text.append(s)
 
-    print ("There are {} OOV words".format(unknow_count))
     print ("The length of processed text is {}".format(total))
-    print("The number of <s> and </s> is {}".format(sentence_count))
 
     for i in range(len(frequency)):
         frequency[i] /= float(total)
 
     frequency.append(float(sentence_count)/float(total))
     frequency.append(float(sentence_count) / float(total))
-    if unknow_count > 0:
-        vocab_idx_list["<unk>"] = unk_symbol_idx
-        frequency.append(float(unknow_count) / float(total))
 
     with open('../ProcessedData/frequency_100000.txt', 'w') as freq:
         freq.write(json.dumps(frequency))
