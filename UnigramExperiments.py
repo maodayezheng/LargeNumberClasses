@@ -162,7 +162,7 @@ def predict_next_word(params):
             exact_log_like_save.append(exact)
             print("At iteration {}, the average estimate loss is {}, the exact log like is {}".format(iteration,
                                                                                                       average_loss,
-                                                                                                      exact_log_like))
+                                                                                                      exact))
             average_loss = 0
         else:
             _, l = session.run([update, loss], feed_dict=input_dict)
