@@ -36,7 +36,7 @@ class AlexEstimator(Estimator):
         # N - Conditioning
         target_scores, samples_scores = self.clip_likelihood(target_scores, samples_scores)
         # N
-        self.Z_ = tf.exp(target_scores) + tf.reduce_sum(tf.exp(samples_scores), 1)
+        self.Z_ = tf.exp(target_scores) + tf.reduce_mean(tf.exp(samples_scores), 1)
         # N - The loss of each element in target
         element_loss = target_scores - tf.log(self.Z_ + eps)
         loss = tf.reduce_mean(element_loss)
