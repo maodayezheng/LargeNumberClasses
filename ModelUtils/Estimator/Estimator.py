@@ -83,6 +83,11 @@ class Estimator(object):
         return tf.reshape(tf.boolean_mask(sample_scores, self.bm), (tf.shape(sample_scores)[0],
                                                                     self.sampler_.num_samples_ - self.extra))
 
+    def conditioning_normalizer(self):
+        """
+
+        """
+
     def set_sample(self, samples):
         self.samples_ = samples
 

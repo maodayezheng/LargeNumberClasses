@@ -42,6 +42,7 @@ class BlackOutEstimator(Estimator):
         neg_scores = tf.log(tf.reshape(self.Z_, (-1, 1)) - tf.exp(samples_scores) + eps)
         # The loss of each element in target
         # N
+        q = tf.Print(q, [tf.reduce_min(q)], message="The value of q")
         log_q = tf.check_numerics(tf.log(q), message="The log_q ")
         element_loss = target_scores - log_q + tf.reduce_sum(neg_scores, 1) -\
             (tf.cast(tf.shape(samples_scores)[1], dtype=tf.float32) + 1.0) * tf.log(self.Z_ + eps)
