@@ -15,7 +15,7 @@ class Estimator(object):
         self.extra = extra
         self.weights_ = None
         self.samples_ = None
-        self.target_exp_ = None
+        self.target_score_ = None
         self.Z_ = None
         self.bm = None
 
@@ -38,9 +38,10 @@ class Estimator(object):
 
             @Return log_like: The exact log likelihood average over words
         """
-        target_scores = tf.reduce_sum(x * h, 1)
+        if self.target_score_ is None:
+            self.target_score_ = tf.reduce_sum(x * h, 1)
         Z = tf.reduce_sum(tf.matmul(h, embedding, transpose_b=True), 1)
-        log_like = tf.reduce_mean((target_scores-tf.log(Z)))
+        log_like = tf.reduce_mean((self.target_score_-tf.log(Z)))
         return log_like
 
     def draw_samples(self, target, num_targets, mask):

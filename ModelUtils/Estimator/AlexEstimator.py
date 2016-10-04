@@ -26,21 +26,20 @@ class AlexEstimator(Estimator):
         if samples is None:
             raise ValueError("samples must be set")
         # N
-        target_scores = tf.reduce_sum(x * h, 1)
+        self.target_score_ = tf.reduce_sum(x * h, 1)
         # N x KE
         samples_scores = tf.matmul(h, samples, transpose_b=True)
         # N x K
         samples_scores = self.get_unique(samples_scores)
         # N
-        target_scores += tf.log(tf.reshape(q, [-1]))
+        target_scores = self.target_score_ + tf.log(tf.reshape(q, [-1]))
         # Conditioning
         max_t = tf.reduce_max(tf.concat(1, (tf.reshape(target_scores, (-1, 1)), samples_scores)), 1)
         m = tf.stop_gradient(max_t)
         target_scores -= m
         samples_scores -= tf.reshape(m, (-1, 1))
         # N
-        self.target_exp_ = tf.exp(target_scores)
-        self.Z_ = self.target_exp_ + tf.reduce_sum(tf.exp(samples_scores), 1)
+        self.Z_ = tf.exp(target_scores) + tf.reduce_sum(tf.exp(samples_scores), 1)
         # The loss of each element in target
         # N
         element_loss = target_scores - tf.log(self.Z_ + eps)

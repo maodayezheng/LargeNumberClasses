@@ -14,13 +14,17 @@ from ModelUtils.Estimator.NegativeEstimator import NegativeEstimator
 
 
 def main():
-    print("Dealing with Large number")
-    params = {"sampler_type": "uniform", "estimator_type": "BLA", "sample_size": 250,
+    print("Dealing with Large number unigram test")
+    estimator_types = ["BLA", "BER", "IMP", "ALEX", "NEG"]
+    params = {"sampler_type": "uniform", "sample_size": 250,
               "batch_size": 10,
               "num_classes": 40004, "sentence_len": 70, "epoch_step": 100, "input_dim": 100, "hidden_dim": 100,
               "output_dim": 100,
               "lamb": 0.001, "l_rate": 0.02}
-    predict_next_word(params)
+
+    for e in estimator_types:
+        params["estimator_type"] = e
+        predict_next_word(params)
 
 
 def predict_next_word(params):
@@ -102,19 +106,21 @@ def predict_next_word(params):
         states.append(state)
         masks.append(mask_t)
     words.append(init_state)
+
+    # Masking the parameters
     states = tf.concat(0, states)
     words = tf.concat(0, words)
     masks = tf.concat(0, masks)
     masks = tf.reshape(masks, [batch_size*sentence_len])
+
+    # Draw samples
     ss, tc, sc = estimator.draw_samples(sentences, 1, masks)
     estimator.set_sample_weights(sc)
     estimator.set_sample(word_embedding(ss))
     states = tf.boolean_mask(states, masks)
     words = tf.boolean_mask(words, masks)
     tc = tf.boolean_mask(tc, masks)
-    words = tf.check_numerics(words, message="The words is ")
-    states = tf.check_numerics(states, message="The state is ")
-    tc = tf.check_numerics(tc, message="The tc is ")
+    # Estimate loss
     loss = tf.check_numerics(estimator.loss(words, states, q=tc), message="The loss is ")
     exact_log_like = estimator.log_likelihood(words, states, embedding)
 
@@ -141,8 +147,11 @@ def predict_next_word(params):
     print("Finished getting batch")
     input_dict = {}
     iteration = 0
-    tigger = True
-    while tigger:
+    loss_check = iteration + epoch_step
+    average_loss = 0
+    average_loss_save = []
+    exact_log_like_save =[]
+    while iteration < 40000:
         iteration += 1
 
         # Randomly pick a data point from batch
@@ -152,10 +161,27 @@ def predict_next_word(params):
             input_dict[inputs[i].name] = d
 
         if iteration % epoch_step is 0:
+            loss_check += epoch_step
             _, exact, l = session.run([update, exact_log_like, loss], feed_dict=input_dict)
+            average_loss = (average_loss+l)/10
+            average_loss_save.append(average_loss)
+            exact_log_like_save.append(exact)
+            print("At iteration {}, the average estimate loss is {}, the exact log like is {}".format(iteration,
+                                                                                                      average_loss,
+                                                                                                      exact_log_like))
+            average_loss = 0
         else:
             _, l = session.run([update, loss], feed_dict=input_dict)
-            if iteration % 50 is 0:
-                print("The loss at iteration {} is {}".format(iteration, l))
+        if loss_check - iteration < 9:
+            average_loss += l
+
+    word_embedding.save_param(session, "ModelParams/")
+    cell.save_param(session, "ModelParams/")
+
+    with open("ModelParams/" + sampler_type + "_" + estimator_type + "_aver_loss.txt", "r") as save_estimate_loss:
+        save_estimate_loss.write(json.dumps(average_loss_save))
+
+    with open("ModelParams/" + sampler_type + "_" + estimator_type + "_exact_loss.txt", "r") as save_estimate_loss:
+        save_estimate_loss.write(json.dumps(exact_log_like_save))
 
 main()

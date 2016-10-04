@@ -21,11 +21,10 @@ class ImportanceEstimator(Estimator):
         if samples is None:
             raise ValueError("samples must be set")
         # N
-        target_scores = tf.reduce_sum(x * h, 1)
-        self.target_exp_ = tf.exp(target_scores)
+        self.target_score_ = tf.reduce_sum(x * h, 1)
         # N x K
         samples_scores = tf.matmul(h, samples, transpose_b=True)
-        target_scores -= tf.reshape(tf.log(q), [-1])
+        target_scores = self.target_score_ - tf.reshape(tf.log(q), [-1])
         samples_scores -= tf.reshape(tf.log(weights), (1, -1))
         # Conditioning
         max_t = tf.reduce_max(tf.concat(1, (tf.reshape(target_scores, (-1, 1)), samples_scores)), 1)

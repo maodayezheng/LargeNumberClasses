@@ -26,20 +26,19 @@ class BernoulliEstimator(Estimator):
         if samples is None:
             raise ValueError("samples must be set")
         # N
-        target_scores = tf.reduce_sum(x * h, 1)
+        self.target_score_ = tf.reduce_sum(x * h, 1)
         # N x KE
         samples_scores = tf.matmul(h, samples, transpose_b=True)
         samples_scores -= tf.log(weights)
         # N x K
         samples_scores = self.get_unique(samples_scores)
         # Conditioning
-        max_t = tf.reduce_max(tf.concat(1, (tf.reshape(target_scores, (-1, 1)), samples_scores)), 1)
+        max_t = tf.reduce_max(tf.concat(1, (tf.reshape(self.target_score_, (-1, 1)), samples_scores)), 1)
         m = tf.stop_gradient(max_t)
-        target_scores -= m
+        target_scores = self.target_score_ - m
         samples_scores -= tf.reshape(m, (-1, 1))
         # N
-        self.target_exp_ = tf.exp(target_scores)
-        self.Z_ = self.target_exp_ + tf.reduce_mean(tf.exp(samples_scores), 1)
+        self.Z_ = tf.exp(target_scores) + tf.reduce_mean(tf.exp(samples_scores), 1)
         # The loss of each element in target
         # N
         element_loss = target_scores - tf.log(self.Z_ + eps)

@@ -24,8 +24,8 @@ class BlackOutEstimator(Estimator):
         if samples is None:
             raise ValueError("samples must be set")
         # N
-        target_scores = tf.reduce_sum(x * h, 1)
-        target_scores -= tf.log(tf.reshape(q, [-1]))
+        self.target_score_ = tf.reduce_sum(x * h, 1)
+        target_scores = self.target_score_ - tf.log(tf.reshape(q, [-1]))
         # N x KE
         samples_scores = tf.matmul(h, samples, transpose_b=True)
         samples_scores -= tf.log(weights)
@@ -37,9 +37,7 @@ class BlackOutEstimator(Estimator):
         target_scores -= m
         samples_scores -= tf.reshape(m, (-1, 1))
         # N
-        self.target_exp_ = tf.exp(target_scores)
-        # N
-        self.Z_ = self.target_exp_ + tf.reduce_sum(tf.exp(samples_scores), 1)
+        self.Z_ = tf.exp(target_scores) + tf.reduce_sum(tf.exp(samples_scores), 1)
         # N x K
         neg_scores = tf.log(tf.reshape(self.Z_, (-1, 1)) - tf.exp(samples_scores) + eps)
         # The loss of each element in target
