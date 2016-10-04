@@ -21,5 +21,5 @@ class NegativeEstimator(Estimator):
         element_loss = tf.log(tf.nn.sigmoid(self.target_score_)) - \
             tf.reduce_sum(tf.log(tf.nn.sigmoid(samples_scores)), 1)
         loss = tf.reduce_mean(element_loss)
-        return -loss
+        return loss
 
