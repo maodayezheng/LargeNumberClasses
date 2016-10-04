@@ -29,10 +29,11 @@ class BernoulliEstimator(Estimator):
         self.target_score_ = tf.reduce_sum(x * h, 1)
         # N x KE
         samples_scores = tf.matmul(h, samples, transpose_b=True)
+        # N x KE - Effectively making exp(ss) = exp(s) / weights
         samples_scores -= tf.log(weights)
         # N x K
         samples_scores = self.get_unique(samples_scores)
-        # Conditioning
+        # N - Conditioning
         max_t = tf.reduce_max(tf.concat(1, (tf.reshape(self.target_score_, (-1, 1)), samples_scores)), 1)
         m = tf.stop_gradient(max_t)
         target_scores = self.target_score_ - m
