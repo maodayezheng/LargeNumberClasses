@@ -25,13 +25,15 @@ class BlackOutEstimator(Estimator):
             raise ValueError("samples must be set")
         # N
         self.target_score_ = tf.reduce_sum(x * h, 1)
+        # N - Effectively making exp(ts) = exp(t) / q
         target_scores = self.target_score_ - tf.log(tf.reshape(q, [-1]))
         # N x KE
         samples_scores = tf.matmul(h, samples, transpose_b=True)
+        # N x KE - Effectively making exp(ss) = exp(s) / weights
         samples_scores -= tf.log(weights)
         # N x K
         samples_scores = self.get_unique(samples_scores)
-        # Conditioning
+        # N Conditioning
         max_t = tf.reduce_max(tf.concat(1, (tf.reshape(target_scores, (-1, 1)), samples_scores)), 1)
         m = tf.stop_gradient(max_t)
         target_scores -= m
@@ -40,10 +42,10 @@ class BlackOutEstimator(Estimator):
         self.Z_ = tf.exp(target_scores) + tf.reduce_sum(tf.exp(samples_scores), 1)
         # N x K
         neg_scores = tf.log(tf.reshape(self.Z_, (-1, 1)) - tf.exp(samples_scores) + eps)
-        # The loss of each element in target
-        # N
+        # N The loss of each element in target
         q = tf.Print(q, [tf.reduce_min(q)], message="The value of q")
         log_q = tf.check_numerics(tf.log(q), message="The log_q ")
+        # !!! Make sure you don't forget to take out the log_q from the objective
         element_loss = target_scores - log_q + tf.reduce_sum(neg_scores, 1) -\
             (tf.cast(tf.shape(samples_scores)[1], dtype=tf.float32) + 1.0) * tf.log(self.Z_ + eps)
         loss = tf.reduce_mean(element_loss)

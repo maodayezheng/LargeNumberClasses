@@ -22,20 +22,20 @@ class ImportanceEstimator(Estimator):
             raise ValueError("samples must be set")
         # N
         self.target_score_ = tf.reduce_sum(x * h, 1)
+        # N - This makes exp(ts) = exp(t)/q
+        target_scores = self.target_score_ - tf.reshape(tf.log(q), [-1])
         # N x K
         samples_scores = tf.matmul(h, samples, transpose_b=True)
-        target_scores = self.target_score_ - tf.reshape(tf.log(q), [-1])
+        # N - This makes exp(ss) = exp(s)/ weights
         samples_scores -= tf.reshape(tf.log(weights), (1, -1))
-        # Conditioning
+        # N - Conditioning
         max_t = tf.reduce_max(tf.concat(1, (tf.reshape(target_scores, (-1, 1)), samples_scores)), 1)
         m = tf.stop_gradient(max_t)
         target_scores -= m
         samples_scores -= tf.reshape(m, (-1, 1))
         # N
         self.Z_ = tf.reduce_sum(tf.exp(samples_scores), 1)
-
-        # The loss of each element in target
-        # N
+        # N - The loss of each element in target
         element_loss = target_scores - tf.log(self.Z_ + eps)
         loss = tf.reduce_mean(element_loss)
         return -loss
