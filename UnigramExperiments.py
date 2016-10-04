@@ -50,7 +50,7 @@ def predict_next_word(params):
     # Initialise the input nodes
     inputs = []
     for i in range(batch_size):
-        s = tf.placeholder(tf.int64, shape=None, name="sentence_{}".format(i))
+        s = tf.placeholder(tf.int64, shape=[1, sentence_len], name="sentence_{}".format(i))
         inputs.append(s)
 
     # Initialise sampler and loss estimator

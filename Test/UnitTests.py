@@ -1,6 +1,5 @@
 import tensorflow as tf
 from DataUtils import DataUtils
-from ModelUtils.Sampler.UniformSampler import UniformSampler
 from ModelUtils.Sampler.UnigramSampler import UnigramSampler
 from ModelUtils.Estimator.AlexEstimator import AlexEstimator
 from ModelUtils.Estimator.BlackOutEstimator import BlackOutEstimator
@@ -107,16 +106,6 @@ def BlackOutEstimatorUnitTest(sess):
     init = tf.initialize_all_variables()
     sess.run(init)
     loss = sess.run([loss])
-
-def UniformSamplerUnitTest(sess):
-    print ("Start test UniformSampler")
-    k = 10
-    sampler = UniformSampler(40, k)
-    target = tf.constant([1, 5, 6], dtype=tf.int64)
-    sample, true_count, sample_count = sampler.draw_sample(target, 1)
-    s, tc, sc = sess.run([sample, true_count, sample_count])
-    print(sc)
-    assert (len(s) is k), "Uniform Sampler test fail"
 
 def UnigramSamplerUnitTest(sess):
     print("Start test UnigramSampler")
