@@ -3,7 +3,7 @@ from .Sampler import Sampler
 
 
 class UnigramSampler(Sampler):
-    def draw_sample(self, targets, num_targets, distort=1.0):
+    def draw_sample(self, targets, num_targets):
         """
             Draw samples from unigram distribution
 
@@ -12,7 +12,8 @@ class UnigramSampler(Sampler):
         """
         ss, _, _ = tf.nn.fixed_unigram_candidate_sampler(tf.reshape(targets, (-1, 1)),
                                                          num_targets, self.num_samples_, self.unique_,
-                                                         self.num_classes_, unigrams=self.proposed_dist_, distortion=distort)
-        tc = tf.squeeze(tf.pow(tf.nn.embedding_lookup(self.proposed_dist_, targets), distort))
-        sc = tf.squeeze(tf.pow(tf.nn.embedding_lookup(self.proposed_dist_, ss), distort))
+                                                         self.num_classes_, unigrams=self.proposed_dist_, distortion=
+                                                         self.distortion_)
+        tc = tf.squeeze(tf.pow(tf.nn.embedding_lookup(self.proposed_dist_, targets), self.distortion_))
+        sc = tf.squeeze(tf.pow(tf.nn.embedding_lookup(self.proposed_dist_, ss), self.distortion_))
         return ss, tc, sc

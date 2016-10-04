@@ -4,7 +4,6 @@ import random
 import tensorflow as tf
 from ModelUtils.EmbeddingLayer import EmbeddingLayer
 from ModelUtils.GRU import GRU
-from ModelUtils.Sampler.UniformSampler import UniformSampler
 from ModelUtils.Sampler.UnigramSampler import UnigramSampler
 from ModelUtils.Estimator.AlexEstimator import AlexEstimator
 from ModelUtils.Estimator.BernoulliEstimator import BernoulliEstimator
@@ -56,15 +55,11 @@ def predict_next_word(params):
 
     # Initialise sampler and loss estimator
     sampler = None
-    if sampler_type is "uniform":
-        sampler = UniformSampler(num_classes, sample_size)
-    elif sampler_type is "unigram":
-        with open("../ProcessedData/frequency_100000.txt", 'r') as freq:
-            p_dist = json.loads(freq.read())
-            sampler = UnigramSampler(num_classes, sample_size, proposed_dist=p_dist)
-            freq.close()
-    else:
-        raise Exception("{} type sampler is not support".format(sampler_type))
+
+    with open("../ProcessedData/frequency_100000.txt", 'r') as freq:
+        p_dist = json.loads(freq.read())
+        sampler = UnigramSampler(num_classes, sample_size, proposed_dist=p_dist, distortion=0.0)
+        freq.close()
 
     estimator = None
     if estimator_type is "BER":

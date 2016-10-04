@@ -1,5 +1,5 @@
 class Sampler(object):
-    def __init__(self, num_classes, num_samples, proposed_dist= None, unique=True):
+    def __init__(self, num_classes, num_samples, distortion=1.0, proposed_dist=None, unique=True):
         """
         The constructor of Sampler
 
@@ -12,6 +12,7 @@ class Sampler(object):
         self.num_samples_ = num_samples
         self.unique_ = unique
         self.proposed_dist_ = proposed_dist
+        self.distortion_ = distortion
 
     def draw_sample(self, targets, num_targets):
         """
