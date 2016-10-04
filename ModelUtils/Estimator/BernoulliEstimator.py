@@ -34,10 +34,7 @@ class BernoulliEstimator(Estimator):
         # N x K
         samples_scores = self.get_unique(samples_scores)
         # N - Conditioning
-        max_t = tf.reduce_max(tf.concat(1, (tf.reshape(self.target_score_, (-1, 1)), samples_scores)), 1)
-        m = tf.stop_gradient(max_t)
-        target_scores = self.target_score_ - m
-        samples_scores -= tf.reshape(m, (-1, 1))
+        target_scores, samples_scores = self.clip_likelihood(self.target_score_, samples_scores)
         # N
         self.Z_ = tf.exp(target_scores) + tf.reduce_mean(tf.exp(samples_scores), 1)
         # The loss of each element in target

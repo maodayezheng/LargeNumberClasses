@@ -34,10 +34,7 @@ class AlexEstimator(Estimator):
         # N - Effectively making exp(ts) = exp(t) * q
         target_scores = self.target_score_ + tf.log(tf.reshape(q, [-1]))
         # N - Conditioning
-        max_t = tf.reduce_max(tf.concat(1, (tf.reshape(target_scores, (-1, 1)), samples_scores)), 1)
-        m = tf.stop_gradient(max_t)
-        target_scores -= m
-        samples_scores -= tf.reshape(m, (-1, 1))
+        target_scores, samples_scores = self.clip_likelihood(target_scores, samples_scores)
         # N
         self.Z_ = tf.exp(target_scores) + tf.reduce_sum(tf.exp(samples_scores), 1)
         # N - The loss of each element in target

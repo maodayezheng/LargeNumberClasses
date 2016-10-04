@@ -44,7 +44,7 @@ class Estimator(object):
         log_like = tf.reduce_mean((self.target_score_-tf.log(Z)))
         return log_like
 
-    def draw_samples(self, target, num_targets, mask):
+    def draw_samples(self, target, num_targets):
         """
         draw sample set and sample weights for approximation
 
@@ -57,7 +57,6 @@ class Estimator(object):
         """
 
         samples, target_prob, sample_prob = self.sampler_.draw_sample(target, num_targets)
-        target = tf.boolean_mask(tf.reshape(target, [-1]), mask)
         N = tf.shape(target)[0]
         K = tf.shape(samples)[0] - self.extra
 
@@ -84,10 +83,21 @@ class Estimator(object):
         return tf.reshape(tf.boolean_mask(sample_scores, self.bm), (tf.shape(sample_scores)[0],
                                                                     self.sampler_.num_samples_ - self.extra))
 
-    def conditioning_normalizer(self):
+    def clip_likelihood(self, target_scores, samples_scores):
         """
+        Clip the likelihood to ensure it does not go to Inf or Nan
 
+        @Param target_scores: The score of target
+        @Param samples_scores: The score of normalizer
+
+        @Return t_score: clipped target_score
+        @Return s_score: clipped samples_scores
         """
+        max_t = tf.reduce_max(tf.concat(1, (tf.reshape(target_scores, (-1, 1)), samples_scores)), 1)
+        m = tf.stop_gradient(max_t)
+        t_scores = target_scores - m
+        s_scores = samples_scores - tf.reshape(m, (-1, 1))
+        return t_scores, s_scores
 
     def set_sample(self, samples):
         self.samples_ = samples

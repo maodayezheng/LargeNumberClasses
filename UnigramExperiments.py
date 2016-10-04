@@ -104,18 +104,20 @@ def predict_next_word(params):
     target_states = tf.concat(0, target_states)
     target_words = tf.concat(0, target_words)
     target_masks = tf.concat(0, target_masks)
-    masks = tf.reshape(target_masks, [batch_size*sentence_len])
+    masks = tf.reshape(target_masks, [batch_size*(sentence_len - 1)])
 
     # Draw samples
-    ss, tc, sc = estimator.draw_samples(sentences, 1, masks)
+
+    targets = tf.boolean_mask(tf.reshape(sentences, [-1, 1]), masks)
+    targets = tf.Print(targets, [tf.reduce_min(targets)], message="After mask")
+    target_states = tf.boolean_mask(target_states, masks)
+    target_words = tf.boolean_mask(target_words, masks)
+    ss, tc, sc = estimator.draw_samples(targets, 1)
     estimator.set_sample_weights(sc)
     estimator.set_sample(word_embedding(ss))
-    states = tf.boolean_mask(target_states, masks)
-    words = tf.boolean_mask(target_words, masks)
-    tc = tf.boolean_mask(tc, masks)
     # Estimate loss
-    loss = tf.check_numerics(estimator.loss(words, states, q=tc), message="The loss is ")
-    exact_log_like = estimator.log_likelihood(words, states, embedding)
+    loss = tf.check_numerics(estimator.loss(target_words, target_states, q=tc), message="The loss is ")
+    exact_log_like = estimator.log_likelihood(target_words, target_states, embedding)
 
     # Training Loss
     l2 = lamb * (cell.l2_regular())

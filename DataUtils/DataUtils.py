@@ -52,20 +52,23 @@ def create_vocabulary(source_path, vocab_size=40000):
     """
     Create the vocabulary from raw text
     """
+    sentence_count = 100000
     words = []
     iters = 0
     sentences = []
     with open(source_path, "r") as text:
-        for line in text:
-            iters += 1
-            sentence = clean_str(line)
+        for i in range(sentence_count):
+            if i % 1000 is 0:
+                print("Load {} from txt".format(i))
+            sentence = clean_str(text.readline())
             sentence.pop()
             sentences.append(sentence)
             words += sentence
         text.close()
 
     dist = FreqDist(words)
-    top_n = dist.most_common(vocab_size)
+    dist.plot()
+    top_n = dist.most_common()
     vocab_idx_list = {}
     frequency = [0.0]
     for i in range(len(top_n)):
@@ -81,7 +84,6 @@ def create_vocabulary(source_path, vocab_size=40000):
     unk_symbol_idx = end_symbol_idx + 1
     vocab_idx_list["<s>"] = start_symbol_idx
     vocab_idx_list["</s>"] = end_symbol_idx
-    vocab_idx_list["<unk>"] = unk_symbol_idx
     vocab_idx_list["<pad>"] = 0
 
     """
@@ -89,7 +91,6 @@ def create_vocabulary(source_path, vocab_size=40000):
     """
     processed_text = []
     unknow_count = 0
-    sentence_count = 0
     total = 0
     unk_word_list = []
     for sentence in sentences:
@@ -104,11 +105,10 @@ def create_vocabulary(source_path, vocab_size=40000):
                 idx = vocab_idx_list[w]
                 s.append(idx)
             except KeyError:
-                # if w is not in then insert the unk_symbol_idx
+                # if w is not in vocabulary then insert the unk_symbol_idx
                 s.append(idx)
                 unknow_count += 1
-                if unknow_count < 5000:
-                    unk_word_list.append(w)
+
         s.append(end_symbol_idx)
         processed_text.append(s)
 
@@ -121,15 +121,17 @@ def create_vocabulary(source_path, vocab_size=40000):
 
     frequency.append(float(sentence_count)/float(total))
     frequency.append(float(sentence_count) / float(total))
-    frequency.append(float(unknow_count) / float(total))
+    if unknow_count > 0:
+        vocab_idx_list["<unk>"] = unk_symbol_idx
+        frequency.append(float(unknow_count) / float(total))
 
-    with open('../ProcessedData/frequency.txt', 'w') as freq:
+    with open('../ProcessedData/frequency_100000.txt', 'w') as freq:
         freq.write(json.dumps(frequency))
         freq.close()
-    with open('../ProcessedData/vocabulary.txt', 'w') as vocab:
+    with open('../ProcessedData/vocabulary_100000.txt', 'w') as vocab:
         vocab.write(json.dumps(vocab_idx_list))
         vocab.close()
-    with open('../ProcessedData/sentences.txt', 'w') as sentence:
+    with open('../ProcessedData/sentences_100000.txt', 'w') as sentence:
         for s in processed_text:
             sentence.write(json.dumps(s)+"\n")
         sentence.close()
