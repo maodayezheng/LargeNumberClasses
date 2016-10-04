@@ -1,7 +1,7 @@
 Unigram: Pass
 Uniform: Pass
 BLA: Pass
-NEG: Fail
+NEG: Pass
 IMP: Pass
 BER: Pass ?
 ALEX: Pass

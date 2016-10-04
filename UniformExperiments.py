@@ -171,7 +171,7 @@ def predict_next_word(params):
     word_embedding.save_param(session, "ModelParams/")
     cell.save_param(session, "ModelParams/")
 
-    with open("ModelParams/" + sampler_type + "_" + estimator_type + "_exact_like.txt", "r") as save_exact:
+    with open("ModelParams/" + sampler_type + "_" + estimator_type + "_exact_like.txt", "w") as save_exact:
         save_exact.write(json.dumps(exact_log_like_save))
 
 
