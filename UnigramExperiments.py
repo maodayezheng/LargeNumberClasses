@@ -145,7 +145,6 @@ def predict_next_word(params):
     iteration = 0
     loss_check = iteration + epoch_step
     average_loss = 0
-    average_loss_save = []
     exact_log_like_save = []
     while iteration < 40000:
         iteration += 1
@@ -160,7 +159,6 @@ def predict_next_word(params):
             loss_check += epoch_step
             _, exact, l = session.run([update, exact_log_like, loss], feed_dict=input_dict)
             average_loss = (average_loss + l) / 10
-            average_loss_save.append(average_loss)
             exact_log_like_save.append(exact)
             print("At iteration {}, the average estimate loss is {}, the exact log like is {}".format(iteration,
                                                                                                       average_loss,
@@ -174,11 +172,9 @@ def predict_next_word(params):
     word_embedding.save_param(session, "ModelParams/")
     cell.save_param(session, "ModelParams/")
 
-    with open("ModelParams/"+sampler_type+"_"+estimator_type+"_aver_loss.txt", "r") as save_estimate_loss:
-            save_estimate_loss.write(json.dumps(average_loss_save))
+    with open("ModelParams/"+sampler_type+"_"+estimator_type+"_exact_like.txt", "r") as save_exact:
+        save_exact.write(json.dumps(exact_log_like_save))
 
-    with open("ModelParams/" + sampler_type + "_" + estimator_type + "_exact_loss.txt", "r") as save_estimate_loss:
-        save_estimate_loss.write(json.dumps(exact_log_like_save))
 
 
 main()
