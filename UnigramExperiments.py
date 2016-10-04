@@ -124,7 +124,8 @@ def predict_next_word(params):
     update = tf.train.GradientDescentOptimizer(l_rate).minimize(objective)
 
     # Initialise Variables
-    session = tf.Session()
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.6)
+    session = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
     init = tf.initialize_all_variables()
     session.run(init)
 
