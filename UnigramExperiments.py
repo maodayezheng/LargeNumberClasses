@@ -55,7 +55,7 @@ def predict_next_word(params):
 
     # Initialise sampler and loss estimator
     sampler = None
-    with open("../ProcessedData/frequency_100000.txt", 'r') as freq:
+    with open("ProcessedData/frequency_100000.txt", 'r') as freq:
             p_dist = json.loads(freq.read())
             sampler = UnigramSampler(num_classes, sample_size, proposed_dist=p_dist)
             freq.close()
