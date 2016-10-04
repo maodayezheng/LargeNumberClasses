@@ -14,7 +14,7 @@ from ModelUtils.Estimator.NegativeEstimator import NegativeEstimator
 
 def main():
     print("Dealing with Large number unigram test")
-    estimator_types =["BLA", "BER", "IMP", "ALEX", "NEG"]
+    estimator_types =["IMP", "BLA", "BER", "ALEX", "NEG"]
     params = {"sampler_type": "unigram", "sample_size": 250,
               "batch_size": 10,
               "sentence_len": 70, "epoch_step": 100, "input_dim": 100, "hidden_dim": 100,
