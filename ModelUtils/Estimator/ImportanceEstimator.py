@@ -25,21 +25,18 @@ class ImportanceEstimator(Estimator):
         self.target_exp_ = tf.exp(target_scores)
         # N x K
         samples_scores = tf.matmul(h, samples, transpose_b=True)
-        log_weights = tf.check_numerics(tf.log(weights), "each weights")
-        log_q = tf.check_numerics(tf.log(q), "each q")
-        target_scores -= tf.reshape(log_q, [-1])
-        samples_scores -= tf.reshape(log_weights, (1, -1))
+        target_scores -= tf.reshape(tf.log(q), [-1])
+        samples_scores -= tf.reshape(tf.log(weights), (1, -1))
+        # Conditioning
         max_t = tf.reduce_max(tf.concat(1, (tf.reshape(target_scores, (-1, 1)), samples_scores)), 1)
         m = tf.stop_gradient(max_t)
         target_scores -= m
         samples_scores -= tf.reshape(m, (-1, 1))
         # N
-        exp_weight = tf.exp(samples_scores)
-        self.Z_ = tf.reduce_sum(tf.check_numerics(exp_weight, "each Z"), 1)
+        self.Z_ = tf.reduce_sum(tf.exp(samples_scores), 1)
 
         # The loss of each element in target
         # N
-        element_loss = tf.check_numerics(target_scores, message="Target score ") - tf.check_numerics(tf.log(tf.check_numerics(self.Z_ + eps, message="The Z")), message="log Z")
-        element_loss = tf.check_numerics(element_loss, "each element_loss")
+        element_loss = target_scores - tf.log(self.Z_ + eps)
         loss = tf.reduce_mean(element_loss)
         return -loss

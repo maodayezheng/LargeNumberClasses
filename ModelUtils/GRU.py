@@ -45,9 +45,7 @@ class GRU(object):
         """
         u = tf.sigmoid(tf.matmul(inputs, self.w_i_u) + tf.matmul(state, self.w_s_u) + self.update_bias_)
         r = tf.sigmoid(tf.matmul(inputs, self.w_i_r) + tf.matmul(state, self.w_s_r) + self.gate_bias_)
-        a = tf.matmul(inputs, self.w_i_c)
-        b = tf.matmul(tf.mul(r, state), self.w_s_c)
-        c = tf.tanh(a + b + self.output_bias_)
+        c = tf.tanh(tf.matmul(inputs, self.w_i_c) + tf.matmul(tf.mul(r, state), self.w_s_c) + self.output_bias_)
         h = tf.mul((1 - u), state) + tf.mul(u, c)
         return h, h
 

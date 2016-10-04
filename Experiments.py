@@ -30,9 +30,7 @@ def predict_next_word(params):
     @Param params: A dictionary of training hyper parameters
     """
 
-    """
-    Get training hyper parameters
-    """
+    # Get training hyper parameters
     sampler_type = params["sampler_type"]
     estimator_type = params["estimator_type"]
     sample_size = params["sample_size"]
@@ -46,17 +44,13 @@ def predict_next_word(params):
     l_rate = params["l_rate"]
     num_classes = params["num_classes"]
 
-    """
-    Initialise the input nodes
-    """
+    # Initialise the input nodes
     inputs = []
     for i in range(batch_size):
         s = tf.placeholder(tf.int64, shape=None, name="sentence_{}".format(i))
         inputs.append(s)
 
-    """
-    Initialise sampler and loss estimator
-    """
+    # Initialise sampler and loss estimator
     sampler = None
     if sampler_type is "uniform":
         sampler = UniformSampler(num_classes, sample_size)
@@ -82,22 +76,16 @@ def predict_next_word(params):
     else:
         raise Exception("{} type estimator is not support".format(estimator_type))
 
-    """
-    Initialise the word embedding layer
-    """
+    # Initialise the word embedding layer
     word_embedding = EmbeddingLayer(num_classes, input_dim, "word")
 
-    """
-    Reshape the input sentences
-    """
+    # Reshape the input sentences
     sentences = tf.squeeze(tf.pack(inputs))
     sentences = tf.split(1, sentence_len, sentences)
     mask = tf.zeros([batch_size, 1], dtype=tf.int64)
     l = len(sentences)
 
-    """
-    Initialise Recurrent network
-    """
+    # Initialise Recurrent network
     cell = GRU(input_dim, hidden_dim, output_dim, "next-word")
     init_state = tf.zeros([batch_size, hidden_dim], dtype=tf.float32, name="init_state")
     state = init_state
@@ -130,22 +118,17 @@ def predict_next_word(params):
     loss = tf.check_numerics(estimator.loss(words, states, q=tc), message="The loss is ")
     exact_log_like = estimator.log_likelihood(words, states, embedding)
 
-    """
-    Training Loss
-    """
+    # Training Loss
     l2 = lamb * (cell.l2_regular())
     objective = l2 + loss
     update = tf.train.GradientDescentOptimizer(l_rate).minimize(objective)
 
-    """
-    Initialise Variables
-    """
+    # Initialise Variables
     session = tf.Session()
     init = tf.initialize_all_variables()
     session.run(init)
-    """
-    Get the training batch
-    """
+
+    # Get the training batch
     print("Start Training")
     batch = []
     with open('ProcessedData/sentences_100000.txt', 'r') as data:
@@ -161,9 +144,8 @@ def predict_next_word(params):
     tigger = True
     while tigger:
         iteration += 1
-        """
-           randomly pick a data point from batch
-        """
+
+        # Randomly pick a data point from batch
         for i in range(batch_size):
             d = random.choice(batch)
             d = [0]*(sentence_len-len(d)) + d
@@ -175,6 +157,5 @@ def predict_next_word(params):
             _, l = session.run([update, loss], feed_dict=input_dict)
             if iteration % 50 is 0:
                 print("The loss at iteration {} is {}".format(iteration, l))
-
 
 main()
