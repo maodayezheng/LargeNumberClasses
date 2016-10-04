@@ -17,7 +17,7 @@ def main():
     estimator_types =["BLA", "BER", "IMP", "ALEX", "NEG"]
     params = {"sampler_type": "unigram", "sample_size": 250,
               "batch_size": 10,
-              "num_classes": 28094, "sentence_len": 70, "epoch_step": 100, "input_dim": 100, "hidden_dim": 100,
+              "num_classes": 28095, "sentence_len": 70, "epoch_step": 100, "input_dim": 100, "hidden_dim": 100,
               "output_dim": 100,
               "lamb": 0.001, "l_rate": 0.02}
 
@@ -57,7 +57,7 @@ def predict_next_word(params):
     sampler = None
     with open("ProcessedData/frequency_100000.txt", 'r') as freq:
             p_dist = json.loads(freq.read())
-            sampler = UnigramSampler(num_classes, sample_size, proposed_dist=p_dist)
+            sampler = UnigramSampler(num_classes-1, sample_size, proposed_dist=p_dist)
             freq.close()
 
     estimator = None
