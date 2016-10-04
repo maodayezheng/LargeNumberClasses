@@ -88,31 +88,30 @@ def predict_next_word(params):
     init_state = tf.zeros([batch_size, hidden_dim], dtype=tf.float32, name="init_state")
     state = init_state
     embedding = word_embedding.get_embedding()
-    states = []
-    words = []
-    masks = []
+    target_states = []
+    target_words = []
+    target_masks = []
     for i in range(l):
         mask_t = tf.not_equal(sentences[i], mask)
         word = word_embedding(sentences[i])
-        if i > 0:
-            words.append(word)
         state, output = cell(word, state)
-        states.append(state)
-        masks.append(mask_t)
-    words.append(init_state)
+        if i < l - 1:
+            target_words.append(word)
+            target_states.append(state)
+            target_masks.append(mask_t)
 
     # Masking the parameters
-    states = tf.concat(0, states)
-    words = tf.concat(0, words)
-    masks = tf.concat(0, masks)
-    masks = tf.reshape(masks, [batch_size*sentence_len])
+    target_states = tf.concat(0, target_states)
+    target_words = tf.concat(0, target_words)
+    target_masks = tf.concat(0, target_masks)
+    masks = tf.reshape(target_masks, [batch_size*sentence_len])
 
     # Draw samples
     ss, tc, sc = estimator.draw_samples(sentences, 1, masks)
     estimator.set_sample_weights(sc)
     estimator.set_sample(word_embedding(ss))
-    states = tf.boolean_mask(states, masks)
-    words = tf.boolean_mask(words, masks)
+    states = tf.boolean_mask(target_states, masks)
+    words = tf.boolean_mask(target_words, masks)
     tc = tf.boolean_mask(tc, masks)
     # Estimate loss
     loss = tf.check_numerics(estimator.loss(words, states, q=tc), message="The loss is ")

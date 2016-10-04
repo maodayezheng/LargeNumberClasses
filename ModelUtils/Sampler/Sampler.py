@@ -13,7 +13,7 @@ class Sampler(object):
         self.num_samples_ = num_samples
         self.unique_ = unique
         self.proposed_dist_ = proposed_dist
-        self.freq_embedding = tf.constant(proposed_dist)
+        self.freq_embedding = tf.constant(proposed_dist[1:])
         self.distortion_ = distortion
 
     def draw_sample(self, targets, num_targets):

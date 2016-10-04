@@ -55,6 +55,7 @@ class Estimator(object):
         @Return target_prob: The probability of target probability
         @Return sample_prob: The probability of sample probability
         """
+
         samples, target_prob, sample_prob = self.sampler_.draw_sample(target, num_targets)
         target = tf.boolean_mask(tf.reshape(target, [-1]), mask)
         N = tf.shape(target)[0]
