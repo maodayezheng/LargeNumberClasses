@@ -85,8 +85,9 @@ def training(params):
         state, output = cell(word, state)
         if 0 < i:
             target_words.append(word)
-            target_states.append(state)
             target_masks.append(mask_t)
+        if i < l-1:
+            target_states.append(state)
 
     # Masking the parameters
     target_states = tf.concat(0, target_states)
