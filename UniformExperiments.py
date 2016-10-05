@@ -68,7 +68,7 @@ def predict_next_word(params):
     with open("ProcessedData/frequency_100000.txt", 'r') as freq:
             p_dist = json.loads(freq.read())
             num_classes = len(p_dist)
-            sampler = UnigramSampler(num_classes-1, sample_size, proposed_dist=p_dist, distortion=distortion)
+            sampler = UnigramSampler(num_classes, sample_size, proposed_dist=p_dist, distortion=distortion)
             freq.close()
     estimator = None
     if estimator_type is "BER":

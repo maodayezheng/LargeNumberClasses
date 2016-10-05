@@ -12,10 +12,10 @@ class UnigramSampler(Sampler):
         """
         ss, _, _ = tf.nn.fixed_unigram_candidate_sampler(targets,
                                                          num_targets, self.num_samples_, self.unique_,
-                                                         self.num_classes_, unigrams=self.proposed_dist_[1:],
+                                                         self.num_classes_, unigrams=self.proposed_dist_,
                                                          distortion=self.distortion_)
 
         tc = tf.nn.embedding_lookup(self.freq_embedding, targets)
-        tc = tf.squeeze(tf.pow(tc, self.distortion_))
-        sc = tf.squeeze(tf.pow(tf.nn.embedding_lookup(self.freq_embedding, ss), self.distortion_))
+        tc = tf.squeeze(tc)
+        sc = tf.squeeze(tf.nn.embedding_lookup(self.freq_embedding, ss))
         return ss, tc, sc
