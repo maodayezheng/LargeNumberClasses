@@ -38,8 +38,8 @@ class Estimator(object):
 
             @Return log_like: The exact log likelihood average over words
         """
-        if self.target_score_ is None:
-            self.target_score_ = tf.reduce_sum(x * h, 1)
+        #if self.target_score_ is None:
+        self.target_score_ = tf.reduce_sum(x * h, 1)
         samples_scores = tf.matmul(h, embedding, transpose_b=True)
         target_score = tf.Print(self.target_score_, [tf.reduce_max(self.target_score_)], "The target is")
         samples_scores = tf.Print(samples_scores, [tf.reduce_min(samples_scores),
@@ -50,7 +50,7 @@ class Estimator(object):
         samples_scores = tf.Print(samples_scores, [tf.reduce_max(samples_scores), tf.reduce_min(samples_scores)],
                                   "The clipped ts")
         checker = tf.reduce_sum(tf.cast(tf.greater_equal(tf.reduce_max(samples_scores, 1) - target_score, 0), tf.float32))
-        checker = tf.Print(checker,[checker], "The value of checker is")
+        checker = tf.Print(checker, [checker], "The value of checker is")
         Z = tf.reduce_sum(tf.exp(samples_scores), 1) + 0*checker
         Z = tf.Print(Z, [tf.reduce_max(Z), tf.reduce_min(Z)], "The value of Z is")
         log_like = tf.reduce_mean((target_score - tf.log(Z + 1e-9)))
