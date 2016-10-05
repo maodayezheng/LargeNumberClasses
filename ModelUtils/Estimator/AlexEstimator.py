@@ -52,12 +52,8 @@ class AlexEstimator(Estimator):
 
             @Return log_like: The exact log likelihood average over words
         """
-        if self.target_score_ is None:
-            self.target_score_ = tf.reduce_sum(x * h, 1)
-
         samples_scores = tf.matmul(h, embedding, transpose_b=True)
-        sample_q = tf.pow(self.sampler_.proposed_dist_, self.sampler_.distortion_)
-        sample_q /= tf.reduce_sum(sample_q)
+        sample_q = self.sampler_.freq_embedding
         samples_scores += tf.log(sample_q)
         target_score = self.target_score_
         Z = tf.reduce_sum(tf.exp(samples_scores), 1)
