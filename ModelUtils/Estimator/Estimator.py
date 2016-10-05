@@ -42,7 +42,9 @@ class Estimator(object):
             self.target_score_ = tf.reduce_sum(x * h, 1)
         samples_scores = tf.matmul(h, embedding, transpose_b=True)
         target_score = self.target_score_
-        #target_score, samples_scores = self.clip_likelihood(self.target_score_, samples_scores)
+        samples_scores = tf.Print(samples_scores, [tf.reduce_min(samples_scores),
+                                                 tf.reduce_max(samples_scores)], "The sample score")
+        target_score, samples_scores = self.clip_likelihood(self.target_score_, samples_scores)
         Z = tf.reduce_sum(tf.exp(samples_scores), 1)
         log_like = tf.reduce_mean((target_score-tf.log(Z)))
         return log_like
