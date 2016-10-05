@@ -44,7 +44,7 @@ class Estimator(object):
         target_score = self.target_score_
         samples_scores = tf.Print(samples_scores, [tf.reduce_min(samples_scores),
                                                  tf.reduce_max(samples_scores)], "The sample score")
-        target_score, samples_scores = self.clip_likelihood(self.target_score_, samples_scores)
+        # target_score, samples_scores = self.clip_likelihood(self.target_score_, samples_scores)
         Z = tf.reduce_sum(tf.exp(samples_scores), 1)
         Z = tf.Print(Z, [tf.reduce_max(Z), tf.reduce_min(Z)], "The value of Z is")
         log_like = tf.reduce_mean((target_score-tf.log(Z)))
