@@ -58,7 +58,7 @@ class AlexEstimator(Estimator):
         samples_scores = tf.matmul(h, embedding, transpose_b=True)
         sample_q = tf.pow(self.sampler_.proposed_dist_, self.sampler_.distortion_)
         sample_q /= tf.reduce_sum(sample_q)
-        # !!! sample_scores += tf.log(sample_q)
+        samples_scores += tf.log(sample_q)
         target_score = self.target_score_ # !!! + tf.log(tf.reshape(q, [-1]))
         Z = tf.reduce_sum(tf.exp(samples_scores), 1)
         log_like = tf.reduce_mean((target_score-tf.log(Z)))
