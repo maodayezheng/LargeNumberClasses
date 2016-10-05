@@ -19,7 +19,7 @@ def main():
               "sentence_len": 70, "epoch_step": 100, "input_dim": 100, "hidden_dim": 100,
               "output_dim": 100,
               "lamb": 0.001, "l_rate": 0.02, 'distortion': 1.0}
-    estimator_types = ["ALEX", "NEG"]
+    estimator_types = ["NEG", "ALEX"]
     params['distortion'] = 0.75
 
     for e in estimator_types:
