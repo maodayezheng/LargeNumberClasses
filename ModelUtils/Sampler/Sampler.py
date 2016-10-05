@@ -17,7 +17,6 @@ class Sampler(object):
         self.proposed_dist_ = proposed_dist
         distorted_freq = tf.pow(tf.constant(proposed_dist), distortion)
         distorted_freq /= tf.reduce_sum(distorted_freq)
-        distorted_freq = tf.Print(distorted_freq,[tf.reduce_max(distorted_freq), tf.reduce_min(distorted_freq)],"The uniform distortion")
         self.freq_embedding = distorted_freq
         self.distortion_ = distortion
 
