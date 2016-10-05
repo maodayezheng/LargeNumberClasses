@@ -2,6 +2,7 @@ from __future__ import print_function
 import json
 import random
 import tensorflow as tf
+import numpy as np
 from ModelUtils.EmbeddingLayer import EmbeddingLayer
 from ModelUtils.GRU import GRU
 from ModelUtils.Sampler.UnigramSampler import UnigramSampler
@@ -179,8 +180,6 @@ def predict_next_word(params):
 
     word_embedding.save_param(session, "ModelParams/")
     cell.save_param(session, "ModelParams/")
-
-    with open("ModelParams/"+sampler_type+"_"+estimator_type+"_"+str(distortion)+"_exact_like.txt", "w") as save_exact:
-        save_exact.write(json.dumps(exact_log_like_save))
+    np.savetxt("ModelParams/"+sampler_type+"_"+estimator_type+"_"+str(distortion)+"_exact_like.txt", exact_log_like_save)
 
 main()
