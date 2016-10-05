@@ -83,7 +83,7 @@ def training(params):
         mask_t = tf.not_equal(sentences[i], mask)
         word = word_embedding(sentences[i])
         state, output = cell(word, state)
-        if i < l - 1:
+        if 0 < i:
             target_words.append(word)
             target_states.append(state)
             target_masks.append(mask_t)
