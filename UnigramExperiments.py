@@ -154,7 +154,7 @@ def predict_next_word(params):
     loss_check = iteration + epoch_step
     average_loss = 0
     exact_log_like_save = []
-    while iteration < 75000:
+    while iteration < 40000:
         iteration += 1
 
         # Randomly pick a data point from batch
@@ -182,7 +182,5 @@ def predict_next_word(params):
 
     with open("ModelParams/"+sampler_type+"_"+estimator_type+"_"+str(distortion)+"_exact_like.txt", "w") as save_exact:
         save_exact.write(json.dumps(exact_log_like_save))
-
-
 
 main()

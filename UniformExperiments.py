@@ -153,7 +153,7 @@ def predict_next_word(params):
     loss_check = iteration + epoch_step
     average_loss = 0
     exact_log_like_save = []
-    while iteration < 75000:
+    while iteration < 40000:
         iteration += 1
 
         # Randomly pick a data point from batch
