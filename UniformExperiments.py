@@ -1,6 +1,7 @@
 from __future__ import print_function
 import json
 import random
+import numpy as np
 import tensorflow as tf
 from ModelUtils.EmbeddingLayer import EmbeddingLayer
 from ModelUtils.GRU import GRU
@@ -16,7 +17,7 @@ def main():
     print("Dealing with Large number unigram test")
     estimator_types =["NEG", "ALEX", "BER", "BLA", "IMP"]
     params = {"sampler_type": "unigram", "sample_size": 250,
-              "batch_size": 10,
+              "batch_size": 50,
               "sentence_len": 70, "epoch_step": 100, "input_dim": 100, "hidden_dim": 100,
               "output_dim": 100,
               "lamb": 0.001, "l_rate": 0.02,'distortion':0.0}
@@ -178,10 +179,8 @@ def predict_next_word(params):
 
     word_embedding.save_param(session, "ModelParams/")
     cell.save_param(session, "ModelParams/")
-
-    with open("ModelParams/" + sampler_type + "_" + estimator_type + "_" + str(distortion) + "_exact_like.txt",
-              "w") as save_exact:
-        save_exact.write(json.dumps(exact_log_like_save))
+    np.savetxt("ModelParams/" + sampler_type + "_" + estimator_type + "_" + str(distortion) + "_exact_like.txt",
+               exact_log_like_save)
 
 
 main()

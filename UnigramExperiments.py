@@ -17,7 +17,7 @@ def main():
     print("Dealing with Large number unigram test")
     estimator_types =["IMP", "BLA", "BER", "ALEX", "NEG"]
     params = {"sampler_type": "unigram", "sample_size": 250,
-              "batch_size": 10,
+              "batch_size": 50,
               "sentence_len": 70, "epoch_step": 100, "input_dim": 100, "hidden_dim": 100,
               "output_dim": 100,
               "lamb": 0.001, "l_rate": 0.02, 'distortion': 1.0}
@@ -155,7 +155,7 @@ def predict_next_word(params):
     loss_check = iteration + epoch_step
     average_loss = 0
     exact_log_like_save = []
-    while iteration < 300:
+    while iteration < 40000:
         iteration += 1
 
         # Randomly pick a data point from batch
