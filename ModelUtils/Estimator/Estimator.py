@@ -49,7 +49,7 @@ class Estimator(object):
         samples_scores = tf.Print(samples_scores, [tf.reduce_min(samples_scores),
                                                    tf.reduce_max(samples_scores)],
                                   "The sample score is")
-        target_score, samples_scores = self.clip_likelihood(target_score, samples_scores)
+        #target_score, samples_scores = self.clip_likelihood(target_score, samples_scores)
         target_score = tf.Print(target_score, [tf.reduce_min(target_score), tf.reduce_max(target_score)],
                                 "The clipped ts")
         samples_scores = tf.Print(samples_scores, [tf.reduce_min(samples_scores), tf.reduce_max(samples_scores)],
