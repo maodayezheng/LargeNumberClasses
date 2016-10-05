@@ -54,7 +54,7 @@ def predict_next_word(params):
     lamb = params["lamb"]
     l_rate = params["l_rate"]
     distortion = params["distortion"]
-    print("Runing the "+estimator_type + "Estimator Test")
+    print("Runing the "+estimator_type + " Estimator Test")
     num_classes = 0
     # Initialise the input nodes
     inputs = []
