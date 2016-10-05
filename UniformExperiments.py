@@ -26,7 +26,7 @@ def main():
          params["estimator_type"] = e
          predict_next_word(params)
 
-    estimator_types =["BLA", "IMP"]
+    estimator_types =["ALEX", "NEG"]
     params["distortion"] = 0.75
 
     for e in estimator_types:
