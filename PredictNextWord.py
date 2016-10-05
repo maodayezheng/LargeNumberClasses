@@ -108,7 +108,7 @@ def training(params):
     exact_log_like = estimator.log_likelihood(target_words, target_states, embedding)
 
     # Training Loss
-    l2 = lamb * (cell.l2_regular())
+    l2 = lamb * (cell.l2_regular()+word_embedding.l2_regular())
     objective = l2 + loss
     update = tf.train.GradientDescentOptimizer(l_rate).minimize(objective)
 

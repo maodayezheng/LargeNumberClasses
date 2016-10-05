@@ -27,6 +27,9 @@ class EmbeddingLayer(object):
         o = tf.squeeze(o)
         return o
 
+    def l2_regular(self):
+        return tf.nn.l2_loss(self.embedding_)
+
     def save_param(self, sess, path):
         """
         Save variables registered in saver
