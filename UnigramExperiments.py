@@ -16,17 +16,17 @@ from ModelUtils.Estimator.NegativeEstimator import NegativeEstimator
 def main():
     print("Dealing with Large number unigram test")
     # ["IMP", "BLA", "NEG", "BER", "ALEX"]
-    estimator_types =["NEG", "BER", "ALEX"]
+    #estimator_types =["NEG", "BER", "ALEX"]
     params = {"sampler_type": "unigram", "sample_size": 250,
               "batch_size": 50,
               "sentence_len": 70, "epoch_step": 100, "input_dim": 100, "hidden_dim": 100,
               "output_dim": 100,
               "lamb": 0.001, "l_rate": 0.02, 'distortion': 1.0}
-
+    """
     for e in estimator_types:
          params["estimator_type"] = e
          predict_next_word(params)
-
+    """
     estimator_types =["IMP", "BLA", "BER"]
     params['distortion'] = 0.75
 
