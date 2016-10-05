@@ -85,7 +85,7 @@ def predict_next_word(params):
         raise Exception("{} type estimator is not support".format(estimator_type))
 
     # Initialise the word embedding layer
-    word_embedding = EmbeddingLayer(num_classes, input_dim, sampler_type+estimator_type+"word")
+    word_embedding = EmbeddingLayer(num_classes, input_dim, sampler_type+estimator_type+str(distortion)+"word")
 
     # Reshape the input sentences
     sentences = tf.squeeze(tf.pack(inputs))
@@ -94,7 +94,7 @@ def predict_next_word(params):
     l = len(sentences)
 
     # Initialise Recurrent network
-    cell = GRU(input_dim, hidden_dim, output_dim, sampler_type+estimator_type)
+    cell = GRU(input_dim, hidden_dim, output_dim, sampler_type+estimator_type+str(distortion))
     init_state = tf.zeros([batch_size, hidden_dim], dtype=tf.float32, name="init_state")
     state = init_state
     embedding = word_embedding.get_embedding()
