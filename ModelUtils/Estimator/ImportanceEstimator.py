@@ -23,7 +23,7 @@ class ImportanceEstimator(Estimator):
         # N
         self.target_score_ = tf.reduce_sum(x * h, 1)
         # N - This makes exp(ts) = exp(t)/q
-        target_scores = self.target_score_ - tf.reshape(tf.log(q), [-1])
+        target_scores = self.target_score_ # - tf.reshape(tf.log(q), [-1])
         # N x K
         samples_scores = tf.matmul(h, samples, transpose_b=True)
         # N - This makes exp(ss) = exp(s)/ weights
