@@ -38,7 +38,7 @@ class Estimator(object):
             @Return log_like: The exact log likelihood average over words
         """
 
-        samples_scores = tf.matmul(h, embedding)
+        samples_scores = tf.matmul(h, embedding, transpose_b=True)
         target_score = tf.nn.embedding_lookup(samples_scores, x-1)
         Z = tf.reduce_sum(tf.exp(samples_scores), 1)
         log_like = tf.reduce_mean((target_score - tf.log(Z)))
