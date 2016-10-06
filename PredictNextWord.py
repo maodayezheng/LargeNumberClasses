@@ -44,7 +44,7 @@ def training(params):
 
     # Initialise sampler and loss estimator
     sampler = None
-    with open("ProcessedData/frequency_100000.txt", 'r') as freq:
+    with open("ProcessedData/frequency.txt", 'r') as freq:
             p_dist = json.loads(freq.read())
             num_classes = len(p_dist)
             sampler = UnigramSampler(num_classes, sample_size, proposed_dist=p_dist, distortion=distortion)
