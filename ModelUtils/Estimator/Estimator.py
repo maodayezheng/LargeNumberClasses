@@ -64,7 +64,7 @@ class Estimator(object):
 
         samples_scores = tf.matmul(h, embedding, transpose_b=True)
         target_score = tf.reduce_sum(x * h, 1)
-        target_score_r = tf.reduce_sum(x_r*h, 1)
+        target_score_r = tf.reduce_sum(x_r * h, 1)
 
         checker = tf.cast(tf.not_equal(target_score, self.target_score_), tf.float32)
         checker_r = tf.cast(tf.not_equal(target_score, target_score_r), tf.float32)

@@ -95,6 +95,7 @@ def training(params):
     targets = tf.boolean_mask(targets, masks)
     target_states = tf.boolean_mask(target_states, masks)
     target_words = tf.boolean_mask(target_words, masks)
+    targets = tf.Print(targets, [tf.reduce_min(targets)],"The min targets")
     ss, tc, sc = estimator.draw_samples(targets, 1)
     estimator.set_sample_weights(sc)
     estimator.set_sample(word_embedding(ss))
