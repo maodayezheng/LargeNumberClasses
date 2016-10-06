@@ -45,7 +45,7 @@ class Estimator(object):
         samples_scores_2 = tf.matmul(h, s_2)
         target_score = tf.reduce_sum(x * h, 1)
         Z = tf.reduce_sum(tf.exp(samples_scores_1), 1) + tf.reduce_sum(tf.exp(samples_scores_2), 1)
-        log_like = tf.reduce_mean((target_score - tf.log(Z + 1e-9)))
+        log_like = tf.reduce_mean((target_score - tf.log(Z)))
         return log_like
 
     def draw_samples(self, target, num_targets):
