@@ -15,6 +15,7 @@ class UnigramSampler(Sampler):
                                                          self.num_classes_-1, unigrams=self.proposed_dist_[1:],
                                                          distortion=self.distortion_)
 
+        targets = tf.Print(targets,[tf.reduce_min(targets)], "The target is ")
         tc = tf.nn.embedding_lookup(self.freq_embedding, targets)
         tc = tf.squeeze(tc)
         sc = tf.squeeze(tf.nn.embedding_lookup(self.freq_embedding, ss+1))
