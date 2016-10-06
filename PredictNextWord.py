@@ -69,7 +69,7 @@ def training(params):
     sentences = tf.squeeze(tf.pack(inputs))
     sentences = tf.split(1, sentence_len, sentences)
     l = len(sentences)
-    mask = tf.zeros([batch_size*(l-1), 1], dtype=tf.int64)
+    mask = tf.zeros([batch_size*(l-1)], dtype=tf.int64)
 
 
     # Initialise Recurrent network
