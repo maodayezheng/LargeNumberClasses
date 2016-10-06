@@ -40,42 +40,13 @@ class Estimator(object):
         """
         if self.target_score_ is None:
             self.target_score_ = tf.reduce_sum(x * h, 1)
-
-        samples_scores = tf.matmul(h, embedding, transpose_b=True)
+        s_1, s_2 = tf.split(1, 2, tf.transpose(embedding))
+        samples_scores_1 = tf.matmul(h, s_1)
+        samples_scores_2 = tf.matmul(h, s_2)
         target_score = tf.reduce_sum(x * h, 1)
-        checker = tf.cast(tf.not_equal(target_score, self.target_score_),tf.float32)
-        checker = tf.Print(checker, [tf.reduce_min(checker)], "Checker")
-        Z = tf.reduce_sum(tf.exp(samples_scores), 1) + 0*checker
+        Z = tf.reduce_sum(tf.exp(samples_scores_1), 1) + tf.reduce_sum(tf.exp(samples_scores_2), 1)
         log_like = tf.reduce_mean((target_score - tf.log(Z + 1e-9)))
         return log_like
-
-    def imp_log_like(self, x, h, embedding, x_r):
-        """
-            Abstract method requires to be implement by sub classes
-
-            @Param x: The target words or batch
-            @Param h: This is usually the output of neural network
-            @Param embedding: The embedding vectors of all words
-
-            @Return log_like: The exact log likelihood average over words
-        """
-        if self.target_score_ is None:
-            self.target_score_ = tf.reduce_sum(x * h, 1)
-
-        samples_scores = tf.matmul(h, embedding, transpose_b=True)
-        target_score = tf.reduce_sum(x * h, 1)
-        target_score_r = tf.reduce_sum(x_r * h, 1)
-
-        checker = tf.cast(tf.not_equal(target_score, self.target_score_), tf.float32)
-        checker_r = tf.cast(tf.not_equal(target_score, target_score_r), tf.float32)
-        checker = tf.Print(checker, [tf.reduce_min(checker)], "Checker")
-        checker_r = tf.Print(checker_r, [tf.reduce_min(checker_r)], "Checker_r")
-        Z = tf.reduce_sum(tf.exp(samples_scores), 1) + 0 * checker + 0*checker_r
-
-        log_like = tf.reduce_mean((target_score - tf.log(Z + 1e-9)))
-
-        return log_like
-
 
     def draw_samples(self, target, num_targets):
         """
