@@ -1,5 +1,4 @@
 import tensorflow as tf
-from ModelUtils.Sampler import Sampler
 
 
 class Estimator(object):
@@ -32,19 +31,16 @@ class Estimator(object):
         """
             Abstract method requires to be implement by sub classes
 
-            @Param x: The target words or batch
+            @Param x: The index of target
             @Param h: This is usually the output of neural network
             @Param embedding: The embedding vectors of all words
 
             @Return log_like: The exact log likelihood average over words
         """
-        if self.target_score_ is None:
-            self.target_score_ = tf.reduce_sum(x * h, 1)
-        s_1, s_2 = tf.split(1, 2, tf.transpose(embedding))
-        samples_scores_1 = tf.matmul(h, s_1)
-        samples_scores_2 = tf.matmul(h, s_2)
-        target_score = tf.reduce_sum(x * h, 1)
-        Z = tf.reduce_sum(tf.exp(samples_scores_1), 1) + tf.reduce_sum(tf.exp(samples_scores_2), 1)
+
+        samples_scores = tf.matmul(h, embedding)
+        target_score = tf.nn.embedding_lookup(samples_scores, x-1)
+        Z = tf.reduce_sum(tf.exp(samples_scores), 1)
         log_like = tf.reduce_mean((target_score - tf.log(Z)))
         return log_like
 

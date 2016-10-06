@@ -24,5 +24,4 @@ def main():
              PredictNextWord.training(params)
     """
 
-
 main()
