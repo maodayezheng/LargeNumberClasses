@@ -11,8 +11,8 @@ class UnigramSampler(Sampler):
             @Param num_targets: The length of target words or batch
         """
         ss, _, _ = tf.nn.fixed_unigram_candidate_sampler(targets,
-                                                         num_targets, self.num_samples_-2, self.unique_,
-                                                         self.num_classes_, unigrams=self.proposed_dist_[1:],
+                                                         num_targets, self.num_samples_, self.unique_,
+                                                         self.num_classes_-1, unigrams=self.proposed_dist_[1:],
                                                          distortion=self.distortion_)
 
         tc = tf.nn.embedding_lookup(self.freq_embedding, targets)
