@@ -38,11 +38,12 @@ class Estimator(object):
             @Return log_like: The exact log likelihood average over words
         """
 
-        samples_scores = tf.squeeze(tf.matmul(h, embedding, transpose_b=True))
-        target_score = tf.squeeze(tf.nn.embedding_lookup(tf.transpose(samples_scores), x-1))
+        samples_scores = tf.nn.log_softmax(tf.squeeze(tf.matmul(h, embedding, transpose_b=True)))
+        samples_scores = tf.Print(tf.transpose(samples_scores),[tf.shape(samples_scores)], "The sample score")
+        target_score = tf.squeeze(tf.nn.embedding_lookup(samples_scores, x-1))
         target_score = tf.diag_part(tf.Print(target_score, [tf.shape(target_score)], "Target score"))
-        Z = tf.reduce_sum(tf.exp(samples_scores), 1)
-        log_like = tf.reduce_mean((target_score - tf.log(Z)))
+        #Z = tf.reduce_sum(tf.exp(samples_scores), 1)
+        log_like = tf.reduce_mean(target_score)
         return log_like
 
     def draw_samples(self, target, num_targets):
