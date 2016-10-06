@@ -155,7 +155,7 @@ def training(params):
         start_pos = end_pos + 1
         end_pos = start_pos + batch_size
         # Reset batch
-        if end_pos > len(batch_size):
+        if end_pos > len(batch):
             mini_batch = batch[start_pos:]
             end_pos = end_pos % data_len
             mini_batch += batch[0:end_pos]
