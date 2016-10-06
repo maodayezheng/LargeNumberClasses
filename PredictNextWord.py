@@ -68,8 +68,9 @@ def training(params):
     # Reshape the input sentences
     sentences = tf.squeeze(tf.pack(inputs))
     sentences = tf.split(1, sentence_len, sentences)
-    mask = tf.zeros([batch_size, 1], dtype=tf.int64)
     l = len(sentences)
+    mask = tf.zeros([batch_size*(l-1), 1], dtype=tf.int64)
+
 
     # Initialise Recurrent network
     cell = GRU(input_dim, hidden_dim, output_dim, sampler_type+estimator_type+str(distortion))
@@ -78,26 +79,22 @@ def training(params):
     embedding = word_embedding.get_embedding()
     target_states = []
     target_words = []
-    target_masks = []
     for i in range(l):
-        mask_t = tf.not_equal(sentences[i], mask)
         word = word_embedding(sentences[i])
         state, output = cell(word, state)
         if 0 < i:
             target_words.append(word)
-            target_masks.append(mask_t)
         if i < l-1:
             target_states.append(state)
 
     # Masking the parameters
     target_states = tf.concat(0, target_states)
     target_words = tf.concat(0, target_words)
-    target_masks = tf.concat(0, target_masks)
-    masks = tf.reshape(target_masks, [batch_size*(sentence_len - 1)])
 
     # Draw samples
-
-    targets = tf.boolean_mask(tf.reshape(sentences, [-1, 1]), masks)
+    targets = tf.reshape(sentences, [-1, 1])
+    masks = tf.not_equal(targets, mask)
+    targets = tf.boolean_mask(targets, masks)
     target_states = tf.boolean_mask(target_states, masks)
     target_words = tf.boolean_mask(target_words, masks)
     ss, tc, sc = estimator.draw_samples(targets, 1)
