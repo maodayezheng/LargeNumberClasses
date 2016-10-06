@@ -69,8 +69,6 @@ def training(params):
     sentences = tf.squeeze(tf.pack(inputs))
     sentences = tf.split(1, sentence_len, sentences)
     l = len(sentences)
-    #mask = tf.zeros([batch_size*(l-1), 1], dtype=tf.int64)
-
 
     # Initialise Recurrent network
     cell = GRU(input_dim, hidden_dim, output_dim, sampler_type+estimator_type+str(distortion))
@@ -110,7 +108,7 @@ def training(params):
     update = tf.train.GradientDescentOptimizer(l_rate).minimize(objective)
 
     # Initialise Variables
-    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.6)
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5)
     session = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
     init = tf.initialize_all_variables()
     session.run(init)
