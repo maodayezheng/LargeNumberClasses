@@ -13,5 +13,6 @@ def main():
               "lamb": 0.001, "l_rate": 0.02, 'distortion': 1.0, 'save_step': 15000}
     for e in estimator_types:
         params["estimator_type"] = e
+        PredictNextWord.training(params)
 
 main()
