@@ -69,9 +69,11 @@ class Estimator(object):
         checker = tf.cast(tf.not_equal(target_score, self.target_score_), tf.float32)
         checker_r = tf.cast(tf.not_equal(target_score, target_score_r), tf.float32)
         checker = tf.Print(checker, [tf.reduce_min(checker)], "Checker")
-        checker_r = tf.Print(checker_r, [tf.reduce_min(checker)], "Checker_r")
+        checker_r = tf.Print(checker_r, [tf.reduce_min(checker_r)], "Checker_r")
         Z = tf.reduce_sum(tf.exp(samples_scores), 1) + 0 * checker + 0*checker_r
+
         log_like = tf.reduce_mean((target_score - tf.log(Z + 1e-9)))
+
         return log_like
 
 
