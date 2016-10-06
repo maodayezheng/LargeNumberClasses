@@ -93,7 +93,7 @@ def training(params):
 
     # Draw samples
     targets = tf.concat(0, sentences[1:])
-    masks = tf.squeeze(tf.not_equal(targets, mask))
+    masks = tf.reshape(tf.squeeze(tf.not_equal(targets, mask)), [batch_size*(l-1)])
     targets = tf.boolean_mask(targets, masks)
     target_states = tf.boolean_mask(target_states, masks)
     target_words = tf.boolean_mask(target_words, masks)
