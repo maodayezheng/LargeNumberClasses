@@ -32,16 +32,13 @@ class AlexEstimator(Estimator):
         # N x K
         samples_scores = self.get_unique(samples_scores)
         # N - Effectively making exp(ts) = exp(t) * q
-        log_q = tf.log(tf.reshape(tf.Print(q,[tf.reduce_min(q), tf.reduce_max(q)], "The log_q"), [-1]))
-        self.target_score_ = self.target_score_ + tf.Print(log_q, [tf.reduce_min(log_q),tf.reduce_max(log_q)], "The log_q")
-        # N - Conditioning
+        log_q = tf.log(q)
+        self.target_score_ = self.target_score_ + log_q        # N - Conditioning
         target_scores, samples_scores = self.clip_likelihood(self.target_score_, samples_scores)
         # N
         self.Z_ = tf.exp(target_scores) + tf.reduce_mean(tf.exp(samples_scores), 1)
         # N - The loss of each element in target
-        Z = tf.Print(self.Z_, [tf.reduce_min(self.Z_), tf.reduce_max(self.Z_)], "The value of Z is")
-        target_scores = tf.Print(target_scores, [tf.reduce_min(target_scores), tf.reduce_max(target_scores)], "The value of Z is")
-        element_loss = target_scores - tf.log(Z + eps)
+        element_loss = target_scores - tf.log(self.Z_ + eps)
         loss = tf.reduce_mean(element_loss)
         return -loss
 
