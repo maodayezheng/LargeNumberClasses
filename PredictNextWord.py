@@ -109,8 +109,9 @@ def training(params):
     update = tf.train.GradientDescentOptimizer(l_rate).minimize(objective)
 
     # Initialise Variables
-    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5)
-    session = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+    #gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5)
+    #session = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+    session = tf.Session()
     init = tf.initialize_all_variables()
     session.run(init)
 
