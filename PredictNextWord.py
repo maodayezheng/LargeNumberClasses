@@ -26,7 +26,8 @@ def training(params):
     sample_size = params["sample_size"]
     batch_size = params["batch_size"]
     sentence_len = params["sentence_len"]
-    epoch_step = params["epoch_step"]
+    epoch = params["epoch"]
+    save_step = params["save_step"]
     input_dim = params["input_dim"]
     hidden_dim = params["hidden_dim"]
     output_dim = params["output_dim"]
@@ -116,7 +117,7 @@ def training(params):
     # Get the training batch
     print("Start Training")
     batch = []
-    with open('ProcessedData/sentences_100000.txt', 'r') as data:
+    with open('ProcessedData/sentences.txt', 'r') as data:
         for d in data:
             d = json.loads(d)
             if len(d) > sentence_len:
@@ -126,33 +127,37 @@ def training(params):
     print("Finished getting batch")
     input_dict = {}
     iteration = 0
-    loss_check = iteration + epoch_step
-    average_loss = 0
     exact_log_like_save = []
-    average_loss_save =[]
-    while iteration < 40000:
+    average_loss_save = []
+    data_len = len(batch)
+    for i in range(epoch):
+        start_pos = 0
+        end_pos = start_pos + batch_size
+        mini_batch = batch[start_pos:end_pos]
+    while True:
         iteration += 1
 
-        # Randomly pick a data point from batch
         for i in range(batch_size):
-            d = random.choice(batch)
+            d = mini_batch[i]
             d = [0] * (sentence_len - len(d)) + d
             input_dict[inputs[i].name] = d
 
-        if iteration % epoch_step is 0:
-            loss_check += epoch_step
-            _, exact, l = session.run([update, exact_log_like, loss], feed_dict=input_dict)
-            average_loss = (average_loss + l) / 10
+        if iteration % save_step is 0:
+            _, exact, aprox_l = session.run([update, exact_log_like, loss], feed_dict=input_dict)
             exact_log_like_save.append(exact)
-            average_loss_save.append(average_loss)
+            average_loss_save.append(aprox_l)
             print(estimator_type+" " + sampler_type + " " + str(distortion) +
                   " At iteration {}, the average estimate loss is {}, the exact log like is {}"
-                  .format(iteration, average_loss, exact))
-            average_loss = 0
+                  .format(iteration, aprox_l, exact))
         else:
             _ = session.run([update], feed_dict=input_dict)
-        if loss_check - iteration < 9:
-            average_loss += l
+        start_pos = end_pos + 1
+        end_pos = start_pos + batch_size
+        # Reset batch
+        if end_pos > len(batch_size):
+            mini_batch = batch[start_pos:]
+            end_pos = end_pos % data_len
+            mini_batch += batch[0:end_pos]
 
     word_embedding.save_param(session, "ModelParams/")
     cell.save_param(session, "ModelParams/")

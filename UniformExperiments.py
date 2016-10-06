@@ -4,7 +4,7 @@ import PredictNextWord
 
 def main():
     print("Dealing with Large number unigram test")
-   #estimator_types = ["IMP"]
+    estimator_types = ["NEG", "ALEX", "BER", "BLA"]
     params = {"sampler_type": "unigram", "sample_size": 250,
               "batch_size": 50,
               "sentence_len": 70, "epoch_step": 100, "input_dim": 100, "hidden_dim": 100,
