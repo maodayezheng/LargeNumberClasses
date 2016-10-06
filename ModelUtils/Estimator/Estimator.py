@@ -49,6 +49,8 @@ class Estimator(object):
         log_like = tf.reduce_mean((target_score - tf.log(Z + 1e-9)))
         return log_like
 
+    def imp_log_like(self):
+
     def draw_samples(self, target, num_targets):
         """
         draw sample set and sample weights for approximation
