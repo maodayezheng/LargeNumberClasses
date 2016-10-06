@@ -69,7 +69,7 @@ def training(params):
     sentences = tf.squeeze(tf.pack(inputs))
     sentences = tf.split(1, sentence_len, sentences)
     l = len(sentences)
-    mask = tf.zeros([batch_size*(l-1)], dtype=tf.int64)
+    mask = tf.zeros([batch_size*(l-1), 1], dtype=tf.int64)
 
 
     # Initialise Recurrent network
@@ -93,7 +93,7 @@ def training(params):
 
     # Draw samples
     targets = tf.reshape(sentences, [-1, 1])
-    masks = tf.not_equal(targets, mask)
+    masks = tf.squeeze(tf.not_equal(targets, mask))
     targets = tf.boolean_mask(targets, masks)
     target_states = tf.boolean_mask(target_states, masks)
     target_words = tf.boolean_mask(target_words, masks)
