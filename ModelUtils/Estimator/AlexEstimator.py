@@ -38,7 +38,9 @@ class AlexEstimator(Estimator):
         # N
         self.Z_ = tf.exp(target_scores) + tf.reduce_mean(tf.exp(samples_scores), 1)
         # N - The loss of each element in target
-        element_loss = target_scores - tf.log(self.Z_ + eps)
+        Z = tf.Print(self.Z_, [tf.reduce_min(self.Z_), tf.reduce_max(self.Z_)], "The value of Z is")
+        target_scores  = tf.Print(target_scores, [tf.reduce_min(target_scores), tf.reduce_max(target_scores)], "The value of Z is")
+        element_loss = target_scores - tf.log(Z + eps)
         loss = tf.reduce_mean(element_loss)
         return -loss
 

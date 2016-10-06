@@ -11,8 +11,13 @@ def main():
               "output_dim": 100,
               "lamb": 0.001, "l_rate": 0.02, 'distortion': 0.0}
 
+<<<<<<< Updated upstream
     #estimator_types = ["ALEX", "NEG"]
     #params["distortion"] = 0.75
+=======
+    estimator_types = ["ALEX", "BER"]
+    params["distortion"] = 0.75
+>>>>>>> Stashed changes
 
     for e in estimator_types:
         params["estimator_type"] = e
