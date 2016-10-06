@@ -100,7 +100,8 @@ def training(params):
     estimator.set_sample(word_embedding(ss))
     # Estimate loss
     loss = tf.check_numerics(estimator.loss(target_words, target_states, q=tc), message="The loss is ")
-    exact_log_like = estimator.log_likelihood(target_words, target_states, embedding)
+    x_r = word_embedding(targets)
+    exact_log_like = estimator.imp_log_like(target_words, target_states, embedding, x_r)
 
     # Training Loss
     l2 = lamb * (cell.l2_regular()+word_embedding.l2_regular())
