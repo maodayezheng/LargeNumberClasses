@@ -43,9 +43,9 @@ class Estimator(object):
 
         samples_scores = tf.matmul(h, embedding, transpose_b=True)
         target_score = tf.reduce_sum(x * h, 1)
-        checker = tf.not_equal(target_score, self.target_score_)
+        checker = tf.cast(tf.not_equal(target_score, self.target_score_),tf.float32)
         checker = tf.Print(checker, [tf.reduce_min(checker)], "Checker")
-        Z = tf.reduce_sum(tf.exp(samples_scores), 1) + 0*tf.cast(checker, tf.float32)
+        Z = tf.reduce_sum(tf.exp(samples_scores), 1) + 0*checker
         log_like = tf.reduce_mean((target_score - tf.log(Z + 1e-9)))
         return log_like
 
