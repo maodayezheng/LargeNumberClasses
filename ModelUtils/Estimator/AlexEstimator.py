@@ -32,8 +32,8 @@ class AlexEstimator(Estimator):
         # N x K
         samples_scores = self.get_unique(samples_scores)
         # N - Effectively making exp(ts) = exp(t) * q
-        log_q = tf.log(tf.reshape(tf.Print(q ,[tf.reduce_min(q),tf.reduce_max(q)], "The log_q"), [-1]))
-        self.target_score_ = self.target_score_ + tf.Print(log_q,[tf.reduce_min(log_q),tf.reduce_max(log_q)], "The log_q")
+        log_q = tf.log(tf.reshape(tf.Print(q,[tf.reduce_min(q), tf.reduce_max(q)], "The log_q"), [-1]))
+        self.target_score_ = self.target_score_ + tf.Print(log_q, [tf.reduce_min(log_q),tf.reduce_max(log_q)], "The log_q")
         # N - Conditioning
         target_scores, samples_scores = self.clip_likelihood(self.target_score_, samples_scores)
         # N
