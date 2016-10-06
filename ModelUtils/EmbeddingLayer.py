@@ -11,7 +11,7 @@ class EmbeddingLayer(object):
         @Param dim: The dimension of embedding vector
         """
         self.name_ = name + "-embedding"
-        self.pad_ = tf.constant(tf.zeros([1, dim]))
+        self.pad_ = tf.zeros([1, dim])
         self.weights_ = tf.Variable(tf.random_uniform([num_class, dim], minval=-0.1, maxval=0.1, dtype=tf.float32))
         self.embedding_ = tf.concat(0, [self.pad_, self.weights_])
         # The saver is used to store parameters
