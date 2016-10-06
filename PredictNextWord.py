@@ -145,12 +145,12 @@ def training(params):
             average_loss = (average_loss + l) / 10
             exact_log_like_save.append(exact)
             average_loss_save.append(average_loss)
-            print("At iteration {}, the average estimate loss is {}, the exact log like is {}".format(iteration,
-                                                                                                      average_loss,
-                                                                                                      exact))
+            print(estimator_type+" " + sampler_type + " " + str(distortion) +
+                  " At iteration {}, the average estimate loss is {}, the exact log like is {}"
+                  .format(iteration, average_loss, exact))
             average_loss = 0
         else:
-            _, l = session.run([update, loss], feed_dict=input_dict)
+            _ = session.run([update], feed_dict=input_dict)
         if loss_check - iteration < 9:
             average_loss += l
 
