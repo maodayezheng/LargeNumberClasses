@@ -125,20 +125,20 @@ def training(params):
                 continue
             batch.append(d)
         data.close()
+
     print("Finished getting batch")
     input_dict = {}
     iteration = 0
     exact_log_like_save = []
     average_loss_save = []
     data_len = len(batch)
-
+    batch = batch[(data_len-5000):]
     start_pos = 0
     end_pos = start_pos + batch_size
-    mini_batch = batch[start_pos:end_pos]
     epoch_count = 0
     while epoch_count < epoch:
         iteration += 1
-
+        mini_batch = batch[start_pos:end_pos]
         for i in range(batch_size):
             d = mini_batch[i]
             d = [0] * (sentence_len - len(d)) + d
