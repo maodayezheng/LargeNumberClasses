@@ -136,9 +136,7 @@ def training(params):
     end_pos = start_pos + batch_size
     mini_batch = batch[start_pos:end_pos]
     epoch_count = 0
-    while True:
-        if epoch_count >= epoch:
-            break
+    while epoch_count < epoch:
         iteration += 1
 
         for i in range(batch_size):
