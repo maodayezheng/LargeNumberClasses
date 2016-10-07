@@ -106,7 +106,7 @@ def training(params):
     # Training Loss
     l2 = lamb * (cell.l2_regular()+word_embedding.l2_regular())
     objective = l2 + loss
-    update = tf.train.RMSPropOptimizer(l_rate).minimize(objective)
+    update = tf.train.AdamOptimizer(l_rate).minimize(objective)
 
     # Initialise Variables
     #gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5)
@@ -166,7 +166,6 @@ def training(params):
             mini_batch += batch[0:end_pos]
         else:
             mini_batch = batch[start_pos:end_pos]
-
 
     word_embedding.save_param(session, "ModelParams/")
     cell.save_param(session, "ModelParams/")
