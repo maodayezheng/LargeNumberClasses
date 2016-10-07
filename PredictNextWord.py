@@ -105,7 +105,7 @@ def training(params):
 
     # Training Loss
     objective = loss
-    update = tf.train.AdamOptimizer(l_rate).minimize(objective)
+    update = tf.train.GradientDescentOptimizer(l_rate).minimize(objective)
 
     # Initialise Variables
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5)
