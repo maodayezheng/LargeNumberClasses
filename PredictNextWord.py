@@ -41,7 +41,7 @@ def training(params):
     for i in range(batch_size):
         s = tf.placeholder(tf.int64, shape=None, name="sentence_{}".format(i))
         inputs.append(s)
-
+    decay = tf.placeholder(tf.int64,shape=None, name="decay_step")
     # Initialise sampler and loss estimator
     sampler = None
     with open("ProcessedData/frequency.txt", 'r') as freq:
@@ -105,6 +105,7 @@ def training(params):
 
     # Training Loss
     objective = loss
+    l_rate = tf.train.exponential_decay(l_rate, decay, 1, 0.9)
     update = tf.train.GradientDescentOptimizer(l_rate).minimize(objective)
 
     # Initialise Variables
@@ -143,7 +144,7 @@ def training(params):
             d = mini_batch[i]
             d = [0] * (sentence_len - len(d)) + d
             input_dict[inputs[i].name] = d
-
+        input_dict[decay.name] = epoch_count
         if iteration % save_step is 0:
             _, exact, aprox_l = session.run([update, exact_log_like, loss], feed_dict=input_dict)
             exact_log_like_save.append(exact)
