@@ -131,8 +131,8 @@ def training(params):
     iteration = 0
     exact_log_like_save = []
     average_loss_save = []
+    batch = batch[(len(batch)-5000):]
     data_len = len(batch)
-    batch = batch[(data_len-5000):]
     start_pos = 0
     end_pos = start_pos + batch_size
     epoch_count = 0
