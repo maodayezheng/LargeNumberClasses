@@ -137,8 +137,9 @@ def training(params):
     end_pos = start_pos + batch_size
     epoch_count = 0
     mini_batch = batch[start_pos:end_pos]
+
+    print("Start epoch {}".format(epoch_count + 1))
     while epoch_count < epoch:
-        print("Start epoch {}".format(epoch_count+1))
         iteration += 1
         for i in range(batch_size):
             d = mini_batch[i]
@@ -159,6 +160,7 @@ def training(params):
         # Reset batch
         if end_pos > data_len:
             epoch_count += 1
+            print("Start epoch {}".format(epoch_count + 1))
             mini_batch = batch[start_pos:]
             end_pos = end_pos % data_len
             mini_batch += batch[0:end_pos]
