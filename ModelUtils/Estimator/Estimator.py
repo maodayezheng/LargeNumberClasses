@@ -39,13 +39,10 @@ class Estimator(object):
         """
 
         samples_scores = tf.nn.log_softmax(tf.squeeze(tf.matmul(h, embedding, transpose_b=True)))
-        samples_scores = tf.Print(tf.transpose(samples_scores), [tf.shape(samples_scores)], "The sample score")
-        sample_max = tf.reduce_max(samples_scores)
+        samples_scores = tf.transpose(samples_scores)
         target_score = tf.squeeze(tf.nn.embedding_lookup(samples_scores, x-1))
-        target_score = tf.diag_part(tf.Print(target_score, [tf.shape(target_score)], "Target score"))
-        #Z = tf.reduce_sum(tf.exp(samples_scores), 1)
-        target_max = tf.reduce_max(target_score)
-        log_like = tf.reduce_mean(target_score) + 0.0*tf.Print(sample_max, [sample_max, target_max], "Sample_max")
+        target_score = tf.diag_part(target_score)
+        log_like = tf.reduce_mean(target_score)
         return log_like
 
     def draw_samples(self, target, num_targets):
