@@ -139,12 +139,7 @@ def training(params):
     mini_batch = batch[start_pos:end_pos]
     while epoch_count < epoch:
         iteration += 1
-        print(start_pos)
-        print(end_pos)
-        print(batch_size)
-        print(len(mini_batch))
         for i in range(batch_size):
-            print(i)
             d = mini_batch[i]
             d = [0] * (sentence_len - len(d)) + d
             input_dict[inputs[i].name] = d
