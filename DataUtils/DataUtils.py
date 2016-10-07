@@ -58,10 +58,11 @@ def create_vocabulary(source_path, vocab_size=40000):
     iters = 0
     sentences = []
     with open(source_path, "r") as text:
-        iters += 1
         for s in text:
+            iters += 1
             if iters % 10000 is 0:
                 print("Load {} from txt".format(iters))
+                break
             sentence = clean_str(s)
             sentence.pop()
             sentences.append(sentence)
@@ -77,7 +78,7 @@ def create_vocabulary(source_path, vocab_size=40000):
     ocr_threshold = 3
     finding = True
     satisfy_set = []
-    unsatisfy_set =[]
+    unsatisfy_set = []
     search_set = top_n
     l = len(search_set)
     print("The is {} unqiue tokens".format(l))

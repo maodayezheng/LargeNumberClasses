@@ -104,8 +104,7 @@ def training(params):
     exact_log_like = estimator.log_likelihood(targets, target_states, embedding)
 
     # Training Loss
-    l2 = lamb * (cell.l2_regular()+word_embedding.l2_regular())
-    objective = l2 + loss
+    objective = loss
     update = tf.train.AdamOptimizer(l_rate).minimize(objective)
 
     # Initialise Variables
