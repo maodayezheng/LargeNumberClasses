@@ -131,11 +131,14 @@ def training(params):
     exact_log_like_save = []
     average_loss_save = []
     data_len = len(batch)
-    for i in range(epoch):
-        start_pos = 0
-        end_pos = start_pos + batch_size
-        mini_batch = batch[start_pos:end_pos]
+
+    start_pos = 0
+    end_pos = start_pos + batch_size
+    mini_batch = batch[start_pos:end_pos]
+    epoch_count = 0
     while True:
+        if epoch_count >= epoch:
+            break
         iteration += 1
 
         for i in range(batch_size):
@@ -156,9 +159,11 @@ def training(params):
         end_pos = start_pos + batch_size
         # Reset batch
         if end_pos > len(batch):
+            epoch_count += 1
             mini_batch = batch[start_pos:]
             end_pos = end_pos % data_len
             mini_batch += batch[0:end_pos]
+
 
     word_embedding.save_param(session, "ModelParams/")
     cell.save_param(session, "ModelParams/")
