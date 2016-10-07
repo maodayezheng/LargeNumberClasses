@@ -136,9 +136,9 @@ def training(params):
     start_pos = 0
     end_pos = start_pos + batch_size
     epoch_count = 0
+    mini_batch = batch[start_pos:end_pos]
     while epoch_count < epoch:
         iteration += 1
-        mini_batch = batch[start_pos:end_pos]
         print(start_pos)
         print(end_pos)
         print(batch_size)
@@ -161,11 +161,13 @@ def training(params):
         start_pos = end_pos + 1
         end_pos = start_pos + batch_size
         # Reset batch
-        if end_pos > len(batch):
+        if end_pos > data_len:
             epoch_count += 1
             mini_batch = batch[start_pos:]
             end_pos = end_pos % data_len
             mini_batch += batch[0:end_pos]
+        else:
+            mini_batch = batch[start_pos:end_pos]
 
 
     word_embedding.save_param(session, "ModelParams/")
