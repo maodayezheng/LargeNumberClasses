@@ -106,7 +106,7 @@ def training(params):
     # Training Loss
     l2 = lamb * (cell.l2_regular()+word_embedding.l2_regular())
     objective = l2 + loss
-    update = tf.train.GradientDescentOptimizer(l_rate).minimize(objective)
+    update = tf.train.RMSPropOptimizer(l_rate).minimize(objective)
 
     # Initialise Variables
     #gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5)
@@ -138,6 +138,7 @@ def training(params):
     epoch_count = 0
     mini_batch = batch[start_pos:end_pos]
     while epoch_count < epoch:
+        print("Start epoch {}".format(epoch_count+1))
         iteration += 1
         for i in range(batch_size):
             d = mini_batch[i]
