@@ -208,26 +208,31 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
     iter_ll = 0
     exact_ll = np.zeros((D1, ), dtype=theano.config.floatX)
     start_time = time.time()
+    many_samples = None
     for e in range(epochs):
         for i in range(0, N, batch_size):
             if iter % record == 0:
                 if iter_ll == exact_ll.shape[0]:
                     exact_ll = np.concatenate((exact_ll, np.zeros((D1,), dtype=theano.config.floatX)), axis=0)
-                exact_ll[iter_ll] = ll_func(0, 10 * batch_size)
+                j = i + batch_size * 10 if (i + 10 * batch_size) < N else N
+                exact_ll[iter_ll] = ll_func(j - 10 * batch_size, j)
                 avg_loss = np.mean(loss[iter-record: iter]) if iter >= record else 0
                 print("Iteration %d: LL: %.3e, Avg Loss: %.3e, Time: %.2f" %
                       (iter, exact_ll[iter_ll], avg_loss, time.time() - start_time))
                 iter_ll += 1
             if iter == loss.shape[0]:
                 loss = np.concatenate((loss, np.zeros((D1, ), dtype=theano.config.floatX)), axis=0)
+            if iter % 100 == 0:
+                many_samples = sampler.draw_sample((100, sampler.num_samples_))
             j = i + batch_size if (i + batch_size) < N else N
-            loss[iter] = train_func(i, j, sampler.draw_sample())
+            loss[iter] = train_func(i, j, many_samples[iter % 100])
             iter += 1
         # Shuffle data
         np.random.shuffle(shuffle_index)
         shuffle_func(shuffle_index)
     loss = loss[:iter]
     exact_ll = exact_ll[:iter_ll]
+
     file_prefix = "%s_%d_%d_%d_%d_" % (estimator_name, gru_dim, int(100*distortion),
                                        int(1000 * l_rate_gru), int(1000 * l_rate_embed))
     print("Total time: %.2f" % (time.time() - start_time))
