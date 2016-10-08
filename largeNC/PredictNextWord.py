@@ -177,7 +177,7 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
 
     # Load data
     batch = []
-    with open(os.path.join(data_folder, "sentences_100000.txt"), 'r') as data:
+    with open(os.path.join(data_folder, "sentences.txt"), 'r') as data:
         for d in data:
             d = json.loads(d)
             if len(d) > max_len:
@@ -199,7 +199,7 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
           (float(np.prod(data_shape) * 4.0) / (10.0 ** 6)))
 
     # Initialise sampler
-    with open(os.path.join(data_folder, "frequency_100000.txt"), 'r') as freq:
+    with open(os.path.join(data_folder, "frequency.txt"), 'r') as freq:
         p_dist = json.loads(freq.read())
         num_classes = len(p_dist)
         sampler = Sampler(num_classes, sample_size,
