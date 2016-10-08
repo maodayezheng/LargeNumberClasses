@@ -7,9 +7,9 @@ def main():
     estimator_types = ["NEG", "ALEX", "BER", "BLA"]
     params = {"sampler_type": "unigram", "sample_size": 250,
               "batch_size": 50,
-              "sentence_len": 70, "epoch_step": 100, "input_dim": 100, "hidden_dim": 100,
+              "sentence_len": 70, "epoch": 15, "input_dim": 100, "hidden_dim": 100,
               "output_dim": 100,
-              "lamb": 0.001, "l_rate": 0.02, 'distortion': 0.0}
+              "lamb": 0.001, "l_rate": 0.02, 'distortion': 0.0, "save_step":15000}
 
     estimator_types = ["ALEX"]
     params["distortion"] = 0.75
