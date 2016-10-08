@@ -4,7 +4,8 @@ import theano.tensor as T
 
 
 class GRU(object):
-    def __init__(self, input_dim, hidden_dim, output_dim, name):
+    def __init__(self, input_dim, hidden_dim, output_dim, name,
+                 u_bias=-1.0, r_bias=0.0, c_bias=0.0):
         """
         The constructor of GRU
 
@@ -20,11 +21,12 @@ class GRU(object):
         self.hidden_dim_ = hidden_dim
         self.output_dim_ = output_dim
         self.name_ = name
-
-        self.ur_bias = theano.shared(np.zeros((2*hidden_dim, ), dtype=theano.config.floatX),
-                                     name=name + "_ur_bias")
-        self.c_bias = theano.shared(np.zeros((hidden_dim, ), dtype=theano.config.floatX),
-                                    name=name + "gru_ur_bias")
+        u_val = np.ones((hidden_dim, )) * u_bias
+        r_val = np.ones((hidden_dim, )) * r_bias
+        ur_val = np.hstack((u_val, r_val)).astype(dtype=theano.config.floatX)
+        self.ur_bias = theano.shared(ur_val, name=name + "_ur_bias")
+        c_val = np.ones((hidden_dim, ), dtype=theano.config.floatX) * c_bias
+        self.c_bias = theano.shared(c_val, name=name + "gru_ur_bias")
         self.w_in = theano.shared(init_w((input_dim, 3 * hidden_dim)),
                                   name=name + "gru_w_in")
         self.w_h = theano.shared(init_w((hidden_dim, 3 * hidden_dim)),
@@ -102,5 +104,6 @@ class GRU(object):
 
 
 def init_w(shape):
-    v = np.random.rand(*shape) / 100.0 - 0.005
+    a = np.sqrt(12.0 / float(sum(shape)))
+    v = np.random.rand(*shape) * 2 * a - a
     return v.astype(theano.config.floatX)
