@@ -93,7 +93,7 @@ def make_train_function(sampler, data, embedding_layer, gru, estimator,
 
     if in_memory:
         return theano.function([batch_start_index, batch_end_index, sample_ids],
-                               [loss, target_qs, tm, ti], updates=updates)
+                               loss, updates=updates)
     else:
         return theano.function([sentence_ids, sample_ids], loss, updates=updates)
 
@@ -256,7 +256,7 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
                 many_samples = sampler.draw_sample((100, sampler.num_samples_))
             j = i + batch_size if (i + batch_size) < N else N
             if in_memory:
-                loss[iter], tq, tm, ti = train_func(i, j, many_samples[iter % 100])
+                loss[iter] = train_func(i, j, many_samples[iter % 100])
             else:
                 loss[iter] = train_func(data[i: j], many_samples[iter % 100])
             iter += 1

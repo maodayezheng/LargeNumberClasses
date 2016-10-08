@@ -67,6 +67,5 @@ class AlexEstimator(Estimator):
         Z = T.sum(T.exp(all_scores), 1)
         ll2 = T.mean(target_scores - T.log(Z))
         loss = Print("Difference")(ll1 - ll2)
-
         return ll2
 
