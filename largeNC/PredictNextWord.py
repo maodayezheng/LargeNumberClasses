@@ -266,8 +266,8 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
     loss = loss[:iter]
     exact_ll = exact_ll[:iter_ll]
 
-    file_prefix = "%s_%d_%d_%d_%d_" % (estimator_name, gru_dim, int(100*distortion),
-                                       int(1000 * l_rate_gru), int(1000 * l_rate_embed))
+    # file_prefix = "%s_%d_%d_%d_%d_" % (estimator_name, gru_dim, int(100*distortion),
+    #                                    int(1000 * l_rate_gru), int(1000 * l_rate_embed))
     file_prefix = ""
     print("Total time: %.2f" % (time.time() - start_time))
     file_name = os.path.join(folder, file_prefix + "loss.csv")

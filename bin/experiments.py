@@ -60,7 +60,11 @@ def main():
                         type=int,
                         default=100)
     args = parser.parse_args()
-    PredictNextWord.training(**vars(args))
+    v = vars(args)
+    print("Program arguments:")
+    for name, value in v.items():
+        print(name, "-", value)
+    PredictNextWord.training(**v)
 
 if __name__ == "__main__":
     main()
