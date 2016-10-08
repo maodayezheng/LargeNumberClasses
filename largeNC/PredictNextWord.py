@@ -25,18 +25,22 @@ def make_shuffle_function(data):
 
 
 def make_train_function(sampler, data, embedding_layer, gru, estimator,
-                        l_rate_gru, l_rate_embed, lamb=0.0):
+                        l_rate_gru, l_rate_embed, lamb=0.0, in_memory=True):
     # Initialise the input nodes
-    # 1
-    batch_start_index = T.iscalar()
-    # 1
-    batch_end_index = T.iscalar()
+    if in_memory:
+        # 1
+        batch_start_index = T.iscalar()
+        # 1
+        batch_end_index = T.iscalar()
+        # N x t
+        sentence_ids = data[batch_start_index:batch_end_index]
+    else:
+        # N x t
+        sentence_ids = T.imatrix()
     # K
     sample_ids = T.ivector(name="samples")
     sample_qs = sampler.freq_embedding[sample_ids]
-    # N x t
-    sentence_ids = T.imatrix()
-    # sentence_ids = data[batch_start_index:batch_end_index]
+
     # Helper vars
     N = sentence_ids.shape[0]
     t = data.shape[1]
@@ -85,19 +89,24 @@ def make_train_function(sampler, data, embedding_layer, gru, estimator,
         updates[p] = p - l_rate_gru * g
     updates[embedding_layer.embedding_] = T.inc_subtensor(all_embed, - l_rate_embed * grads[0])
 
-    # return theano.function([batch_start_index, batch_end_index, sample_ids], loss, updates=updates)
-    return theano.function([sentence_ids, sample_ids], loss, updates=updates)
+    if in_memory:
+        return theano.function([batch_start_index, batch_end_index, sample_ids], loss, updates=updates)
+    else:
+        return theano.function([sentence_ids, sample_ids], loss, updates=updates)
 
 
-def make_ll_function(sampler, data, embedding_layer, gru, estimator):
+def make_ll_function(sampler, data, embedding_layer, gru, estimator, in_memory=True):
     # Initialise the input nodes
-    # 1
-    batch_start_index = T.iscalar()
-    # 1
-    batch_end_index = T.iscalar()
-    # N x t
-    sentence_ids = T.imatrix()
-    # sentence_ids = data[batch_start_index:batch_end_index]
+    if in_memory:
+        # 1
+        batch_start_index = T.iscalar()
+        # 1
+        batch_end_index = T.iscalar()
+        # N x t
+        sentence_ids = data[batch_start_index:batch_end_index]
+    else:
+        # N x t
+        sentence_ids = T.imatrix()
     # Helper vars
     N = sentence_ids.shape[0]
     t = data.shape[1]
@@ -129,15 +138,17 @@ def make_ll_function(sampler, data, embedding_layer, gru, estimator):
 
     exact_ll = estimator.log_likelihood(embedding_layer.embedding_, sampler.freq_embedding,
                                         h, target_ids, target_qs)
-    # return theano.function([batch_start_index, batch_end_index], exact_ll)
-    return theano.function([sentence_ids], exact_ll)
+    if in_memory:
+        return theano.function([batch_start_index, batch_end_index], exact_ll)
+    else:
+        return theano.function([sentence_ids], exact_ll)
 
 
 def training(estimator_name, folder, sample_size=250, batch_size=100,
              epochs=10, max_len=70,
              embed_dim=100, gru_dim=100, lamb=0.0,
              l_rate_gru=0.02, l_rate_embed=0.02,
-             distortion=1.0, record=100):
+             distortion=1.0, record=100, in_memory=True):
     """
     The RNN model to predict next word
 
@@ -177,10 +188,15 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
                 v[:len(d)] = np.asarray(d, dtype="int32")
                 batch.append(v)
         data.close()
-    data = np.stack(batch)
-    # data = theano.shared(batch, name="sentences")
-    print("Shape of data:", data.shape, " size in memory: %.2fMB" %
-          (float(np.prod(data.shape) * 4.0) / (10.0 ** 6)))
+    if in_memory:
+        data = theano.shared(np.stack(batch), name="sentences")
+        data_shape = data.shape.eval()
+    else:
+        data = np.stack(batch)
+        data_shape = data.shape
+
+    print("Shape of data:", data_shape, " size in memory: %.2fMB" %
+          (float(np.prod(data_shape) * 4.0) / (10.0 ** 6)))
 
     # Initialise sampler
     with open(os.path.join(data_folder, "frequency_100000.txt"), 'r') as freq:
@@ -201,13 +217,14 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
               "%s_%d_gru" % (estimator_name, int(100 * distortion)))
 
     # Make functions
-    # shuffle_func = make_shuffle_function(data)
+    if in_memory:
+        shuffle_func = make_shuffle_function(data)
     train_func = make_train_function(sampler, data, embedding_layer, gru, estimator,
-                                     l_rate_gru, l_rate_embed, lamb)
-    ll_func = make_ll_function(sampler, data, embedding_layer, gru, estimator)
+                                     l_rate_gru, l_rate_embed, lamb, in_memory)
+    ll_func = make_ll_function(sampler, data, embedding_layer, gru, estimator, in_memory)
 
     # Make index for shuffling
-    N = data.shape[0]
+    N = data_shape[0]
     shuffle_index = np.arange(N, dtype="int32")
     D1 = 10000
     iter = 0
@@ -222,8 +239,10 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
                 if iter_ll == exact_ll.shape[0]:
                     exact_ll = np.concatenate((exact_ll, np.zeros((D1,), dtype=theano.config.floatX)), axis=0)
                 j = i + batch_size * 10 if (i + 10 * batch_size) < N else N
-                exact_ll[iter_ll] = ll_func(data[j - 10 * batch_size: j])
-                # exact_ll[iter_ll] = ll_func(j - 10 * batch_size, j)
+                if in_memory:
+                    exact_ll[iter_ll] = ll_func(j - 10 * batch_size, j)
+                else:
+                    exact_ll[iter_ll] = ll_func(data[j - 10 * batch_size: j])
                 avg_loss = np.mean(loss[iter-record: iter]) if iter >= record else 0
                 print("Iteration %d: LL: %.3e, Avg Loss: %.3e, Time: %.2f" %
                       (iter, exact_ll[iter_ll], avg_loss, time.time() - start_time))
@@ -233,14 +252,17 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
             if iter % 100 == 0:
                 many_samples = sampler.draw_sample((100, sampler.num_samples_))
             j = i + batch_size if (i + batch_size) < N else N
-            loss[iter] = train_func(data[i: j], many_samples[iter % 100])
-            # loss[iter] = train_func(i, j, many_samples[iter % 100])
+            if in_memory:
+                loss[iter] = train_func(i, j, many_samples[iter % 100])
+            else:
+                loss[iter] = train_func(data[i: j], many_samples[iter % 100])
             iter += 1
         # Shuffle data
         np.random.shuffle(shuffle_index)
-        data = data[shuffle_index]
-        print(data.shape)
-        # shuffle_func(shuffle_index)
+        if in_memory:
+            shuffle_func(shuffle_index)
+        else:
+            data = data[shuffle_index]
     loss = loss[:iter]
     exact_ll = exact_ll[:iter_ll]
 
