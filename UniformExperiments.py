@@ -11,17 +11,9 @@ def main():
               "output_dim": 100,
               "lamb": 0.001, "l_rate": 0.02, 'distortion': 0.0, "save_step":15000}
 
-    estimator_types = ["ALEX"]
-    params["distortion"] = 0.75
-
     for e in estimator_types:
         params["estimator_type"] = e
         PredictNextWord.training(params)
 
-    """
-        for e in estimator_types:
-             params["estimator_type"] = e
-             PredictNextWord.training(params)
-    """
 
 main()
