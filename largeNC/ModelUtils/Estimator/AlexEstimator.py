@@ -30,7 +30,7 @@ class AlexEstimator(Estimator):
         # N x K
         samples_scores = self.get_unique(target_ids, sample_ids, samples_scores)
         # Essentially dividing by K
-        samples_scores -= T.log(T.cast(T.printing.Print("Check the shape[1] : ")(samples_scores.shape[1]), theano.config.floatX))
+        samples_scores -= T.log(T.cast(samples_scores.shape[1], theano.config.floatX))
         # N x (K + 1)
         merged = T.concatenate((target_scores.dimshuffle(0, 'x'), samples_scores), axis=1)
         # Take a standard softmax
