@@ -27,10 +27,14 @@ class GRU(object):
                                     name=name + "gru_ur_bias")
         self.w_in = theano.shared(init_w((input_dim, 3 * hidden_dim)),
                                   name=name + "gru_w_in")
-        self.w_h = theano.shared(init_w((input_dim, 3 * hidden_dim)),
+        self.w_h = theano.shared(init_w((hidden_dim, 3 * hidden_dim)),
                                  name=name + "gru_w_h")
         self.h_init = theano.shared(init_w((hidden_dim, )),
                                     name=name + "gru_h_init")
+        self.w_out = theano.shared(init_w((hidden_dim, output_dim)),
+                                   name=name + "gru_w_out")
+        self.b_out = theano.shared(np.zeros((output_dim, ), dtype=theano.config.floatX),
+                                   name=name + "gru_b_out")
 
     def __call__(self, inputs):
         """
@@ -53,7 +57,9 @@ class GRU(object):
                               non_sequences=self.get_params(),
                               strict=True)[0]
         # Go back to NxTxD
-        return outputs.dimshuffle((1, 0, 2))
+        outputs = outputs.dimshuffle((1, 0, 2)).reshape((n * t, self.hidden_dim_))
+        outputs = T.dot(outputs, self.w_out) + self.b_out.dimshuffle('x', 0)
+        return outputs.reshape((n, t, self.output_dim_))
 
     def step(self, in_contrib, h_prev, *args):
         precompute_h = T.dot(h_prev, self.w_h)
@@ -91,7 +97,8 @@ class GRU(object):
         """
         :return: list of the parameters of the GRU
         """
-        return [self.ur_bias, self.c_bias, self.w_in, self.w_h, self.h_init]
+        return [self.ur_bias, self.c_bias, self.w_in, self.w_h,
+                self.h_init, self.w_out, self.b_out]
 
 
 def init_w(shape):

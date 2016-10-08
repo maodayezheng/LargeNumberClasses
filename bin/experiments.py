@@ -35,7 +35,7 @@ def main():
     parser.add_argument("-gd", "--gru_dim",
                         help="Dimensionality of the hidden state in the GRU",
                         type=int,
-                        default=100)
+                        default=128)
     parser.add_argument("--lamb",
                         help="L2 Penalty",
                         type=float,
