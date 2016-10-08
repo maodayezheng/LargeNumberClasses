@@ -132,6 +132,7 @@ def training(params):
     average_loss_save = []
     batch = batch[0:(len(batch)-5000)]
     data_len = len(batch)
+    print("The training data batch size is {}".format(data_len))
     start_pos = 0
     end_pos = start_pos + batch_size
     epoch_count = 0
