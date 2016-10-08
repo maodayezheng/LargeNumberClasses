@@ -1,7 +1,7 @@
 import tensorflow as tf
 from DataUtils import DataUtils
-from ModelUtils.Sampler.UnigramSampler import UnigramSampler
 from ModelUtils.Estimator.AlexEstimator import AlexEstimator
+from ModelUtils.Sampler import Sampler
 from ModelUtils.Estimator.BlackOutEstimator import BlackOutEstimator
 from ModelUtils.Estimator.BernoulliEstimator import BernoulliEstimator
 from ModelUtils.Estimator.ImportanceEstimator import ImportanceEstimator
@@ -18,7 +18,7 @@ def DataUtilsUnitTest():
 
 def AlexEstimatorUnitTest(sess):
     print("Start test AlexEstimator")
-    sampler = UniformSampler(40, 4)
+    sampler = Sampler(40, 4)
     embedding = EmbeddingLayer(40, 10, "test")
     estimator = AlexEstimator(sampler)
     target = tf.constant([[1]], dtype=tf.int64)
@@ -36,7 +36,7 @@ def AlexEstimatorUnitTest(sess):
 
 def BernoulliEstimatorUnitTest(sess):
     print("Start test BernoulliEstimator")
-    sampler = UniformSampler(40, 4)
+    sampler = Sampler(40, 4)
     embedding = EmbeddingLayer(40, 10, "test")
     estimator = BernoulliEstimator(sampler)
     target = tf.constant([[1]], dtype=tf.int64)
@@ -56,7 +56,7 @@ def BernoulliEstimatorUnitTest(sess):
 
 def ImportanceEstimatorUnitTest(sess):
     print("Start test ImportanceEstimator")
-    sampler = UniformSampler(40, 4)
+    sampler = Sampler(40, 4)
     embedding = EmbeddingLayer(40, 10, "test")
     estimator = ImportanceEstimator(sampler)
     target = tf.constant([[1]], dtype=tf.int64)
@@ -74,7 +74,7 @@ def ImportanceEstimatorUnitTest(sess):
 
 def NegativeEstimatorUnitTest(sess):
     print("Start test NegativeEstimator")
-    sampler = UniformSampler(40, 4)
+    sampler = Sampler(40, 4)
     embedding = EmbeddingLayer(40, 10, "test")
     estimator = NegativeEstimator(sampler)
     target = tf.constant([[1]], dtype=tf.int64)
@@ -92,7 +92,7 @@ def NegativeEstimatorUnitTest(sess):
 
 def BlackOutEstimatorUnitTest(sess):
     print ("Start test NegativeEstimator")
-    sampler = UniformSampler(40, 4)
+    sampler = Sampler(40, 4)
     embedding = EmbeddingLayer(40, 10, "test")
     estimator = NegativeEstimator(sampler)
     target = tf.constant([[1]], dtype=tf.int64)
@@ -155,7 +155,7 @@ def SmallRNNTest(sess):
 
 print("Start unit tests")
 #sess = tf.Session()
-#UniformSamplerUnitTest(sess)
+#SamplerUnitTest(sess)
 #UnigramSamplerUnitTest(sess)
 #GRUUnitTest(sess)
 #EmbeddingLayerUnitTest(sess)
