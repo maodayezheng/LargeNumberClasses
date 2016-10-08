@@ -30,7 +30,8 @@ class AlexEstimator(Estimator):
         # N x K
         samples_scores = self.get_unique(target_ids, sample_ids, samples_scores)
         # Essentially dividing by K
-        checker = T.printing.debugprint(samples_scores.shape[1])
+        checker = T.printing.Print("Check the shape[1] : ")
+        checking = theano.function(samples_scores.shape[1], [checker])
         samples_scores -= T.log(T.cast(samples_scores.shape[1], theano.config.floatX))
         # N x (K + 1)
         merged = T.concatenate((target_scores.dimshuffle(0, 'x'), samples_scores), axis=1)
