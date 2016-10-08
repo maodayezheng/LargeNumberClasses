@@ -35,7 +35,8 @@ def make_train_function(sampler, data, embedding_layer, gru, estimator,
     sample_ids = T.ivector(name="samples")
     sample_qs = sampler.freq_embedding[sample_ids]
     # N x t
-    sentence_ids = data[batch_start_index:batch_end_index]
+    sentence_ids = T.imatrix()
+    # sentence_ids = data[batch_start_index:batch_end_index]
     # Helper vars
     N = sentence_ids.shape[0]
     t = data.shape[1]
@@ -84,7 +85,8 @@ def make_train_function(sampler, data, embedding_layer, gru, estimator,
         updates[p] = p - l_rate_gru * g
     updates[embedding_layer.embedding_] = T.inc_subtensor(all_embed, - l_rate_embed * grads[0])
 
-    return theano.function([batch_start_index, batch_end_index, sample_ids], loss, updates=updates)
+    # return theano.function([batch_start_index, batch_end_index, sample_ids], loss, updates=updates)
+    return theano.function([sentence_ids, sample_ids], loss, updates=updates)
 
 
 def make_ll_function(sampler, data, embedding_layer, gru, estimator):
@@ -94,7 +96,8 @@ def make_ll_function(sampler, data, embedding_layer, gru, estimator):
     # 1
     batch_end_index = T.iscalar()
     # N x t
-    sentence_ids = data[batch_start_index:batch_end_index]
+    sentence_ids = T.imatrix()
+    # sentence_ids = data[batch_start_index:batch_end_index]
     # Helper vars
     N = sentence_ids.shape[0]
     t = data.shape[1]
@@ -126,7 +129,8 @@ def make_ll_function(sampler, data, embedding_layer, gru, estimator):
 
     exact_ll = estimator.log_likelihood(embedding_layer.embedding_, sampler.freq_embedding,
                                         h, target_ids, target_qs)
-    return theano.function([batch_start_index, batch_end_index], exact_ll)
+    # return theano.function([batch_start_index, batch_end_index], exact_ll)
+    return theano.function([sentence_ids], exact_ll)
 
 
 def training(estimator_name, folder, sample_size=250, batch_size=100,
@@ -168,10 +172,10 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
                 v[:len(d)] = np.asarray(d, dtype="int32")
                 batch.append(v)
         data.close()
-    batch = np.stack(batch)
-    print("Shape of data:", batch.shape, " size in memory: %.2fMB" %
-          (float(np.prod(batch.shape) * 4.0) / (10.0 ** 6)))
-    data = theano.shared(batch, name="sentences")
+    data = np.stack(batch)
+    # data = theano.shared(batch, name="sentences")
+    print("Shape of data:", data.shape, " size in memory: %.2fMB" %
+          (float(np.prod(data.shape) * 4.0) / (10.0 ** 6)))
 
     # Initialise sampler
     with open("ProcessedData/frequency_100000.txt", 'r') as freq:
@@ -192,7 +196,7 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
               "%s_%d_gru" % (estimator_name, int(100 * distortion)))
 
     # Make functions
-    shuffle_func = make_shuffle_function(data)
+    # shuffle_func = make_shuffle_function(data)
     train_func = make_train_function(sampler, data, embedding_layer, gru, estimator,
                                      l_rate_gru, l_rate_embed, lamb)
     ll_func = make_ll_function(sampler, data, embedding_layer, gru, estimator)
@@ -201,7 +205,7 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
     shuffle_index = np.arange(num_classes, dtype="int32")
     np.random.shuffle(shuffle_index)
 
-    N = data.shape.eval()[0]
+    N = data.shape[0]
     D1 = 10000
     iter = 0
     loss = np.zeros((D1, ), dtype=theano.config.floatX)
@@ -215,7 +219,9 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
                 if iter_ll == exact_ll.shape[0]:
                     exact_ll = np.concatenate((exact_ll, np.zeros((D1,), dtype=theano.config.floatX)), axis=0)
                 j = i + batch_size * 10 if (i + 10 * batch_size) < N else N
-                exact_ll[iter_ll] = ll_func(j - 10 * batch_size, j)
+                print("LL", j - 10 * batch_size, j)
+                exact_ll[iter_ll] = ll_func(data[j - 10 * batch_size: j])
+                # exact_ll[iter_ll] = ll_func(j - 10 * batch_size, j)
                 avg_loss = np.mean(loss[iter-record: iter]) if iter >= record else 0
                 print("Iteration %d: LL: %.3e, Avg Loss: %.3e, Time: %.2f" %
                       (iter, exact_ll[iter_ll], avg_loss, time.time() - start_time))
@@ -225,16 +231,20 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
             if iter % 100 == 0:
                 many_samples = sampler.draw_sample((100, sampler.num_samples_))
             j = i + batch_size if (i + batch_size) < N else N
-            loss[iter] = train_func(i, j, many_samples[iter % 100])
+            print("TF", i, j)
+            loss[iter] = train_func(data[i: j], many_samples[iter % 100])
+            # loss[iter] = train_func(i, j, many_samples[iter % 100])
             iter += 1
         # Shuffle data
         np.random.shuffle(shuffle_index)
-        shuffle_func(shuffle_index)
+        data = data[shuffle_index]
+        # shuffle_func(shuffle_index)
     loss = loss[:iter]
     exact_ll = exact_ll[:iter_ll]
 
     file_prefix = "%s_%d_%d_%d_%d_" % (estimator_name, gru_dim, int(100*distortion),
                                        int(1000 * l_rate_gru), int(1000 * l_rate_embed))
+    file_prefix = ""
     print("Total time: %.2f" % (time.time() - start_time))
     file_name = os.path.join(folder, file_prefix + "loss.csv")
     print("Saving loss to", file_name, "with shape", loss.shape)
