@@ -131,15 +131,14 @@ def training(params):
     exact_log_like_save = []
     average_loss_save = []
 
-    print("The training data batch size is {}".format(len(batch)))
     batch = batch[0:(len(batch)-5000)]
     data_len = len(batch)
-    print("The training data batch size is {}".format(data_len))
     start_pos = 0
     end_pos = start_pos + batch_size
     epoch_count = 0
     mini_batch = batch[start_pos:end_pos]
-
+    aver_loss = 0.0
+    check_point = 1
     print("Start epoch {}".format(epoch_count + 1))
     while epoch_count < epoch:
         iteration += 1
@@ -151,14 +150,23 @@ def training(params):
         if iteration % save_step is 0:
             _, exact, aprox_l = session.run([update, exact_log_like, loss], feed_dict=input_dict)
             exact_log_like_save.append(exact)
-            average_loss_save.append(aprox_l)
+            aver_loss += aprox_l
+            aver_loss /= 10.0
+            average_loss_save.append(aver_loss)
+            check_point += 1
             print(estimator_type+" " + sampler_type + " " + str(distortion) +
                   " At iteration {}, the average estimate loss is {}, the exact log like is {}"
-                  .format(iteration, aprox_l, exact))
+                  .format(iteration, aver_loss, exact))
+            aver_loss = 0.0
         else:
-            _ = session.run([update], feed_dict=input_dict)
+            _, aprox_l = session.run([update, loss], feed_dict=input_dict)
+            if save_step * check_point - iteration < 10:
+                 aver_loss += aprox_l
+
         start_pos = end_pos + 1
         end_pos = start_pos + batch_size
+
+
         # Reset batch
         if end_pos > data_len:
             epoch_count += 1

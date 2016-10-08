@@ -62,7 +62,6 @@ def create_vocabulary(source_path, vocab_size=40000):
             iters += 1
             if iters % 10000 is 0:
                 print("Load {} from txt".format(iters))
-                break
             sentence = clean_str(s)
             sentence.pop()
             sentences.append(sentence)
