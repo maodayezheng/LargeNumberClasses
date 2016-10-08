@@ -202,10 +202,8 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
     ll_func = make_ll_function(sampler, data, embedding_layer, gru, estimator)
 
     # Make index for shuffling
-    shuffle_index = np.arange(num_classes, dtype="int32")
-    np.random.shuffle(shuffle_index)
-
     N = data.shape[0]
+    shuffle_index = np.arange(N, dtype="int32")
     D1 = 10000
     iter = 0
     loss = np.zeros((D1, ), dtype=theano.config.floatX)
@@ -219,7 +217,6 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
                 if iter_ll == exact_ll.shape[0]:
                     exact_ll = np.concatenate((exact_ll, np.zeros((D1,), dtype=theano.config.floatX)), axis=0)
                 j = i + batch_size * 10 if (i + 10 * batch_size) < N else N
-                print("LL", j - 10 * batch_size, j)
                 exact_ll[iter_ll] = ll_func(data[j - 10 * batch_size: j])
                 # exact_ll[iter_ll] = ll_func(j - 10 * batch_size, j)
                 avg_loss = np.mean(loss[iter-record: iter]) if iter >= record else 0
@@ -231,13 +228,13 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
             if iter % 100 == 0:
                 many_samples = sampler.draw_sample((100, sampler.num_samples_))
             j = i + batch_size if (i + batch_size) < N else N
-            print("TF", i, j)
             loss[iter] = train_func(data[i: j], many_samples[iter % 100])
             # loss[iter] = train_func(i, j, many_samples[iter % 100])
             iter += 1
         # Shuffle data
         np.random.shuffle(shuffle_index)
         data = data[shuffle_index]
+        print(data.shape)
         # shuffle_func(shuffle_index)
     loss = loss[:iter]
     exact_ll = exact_ll[:iter_ll]
