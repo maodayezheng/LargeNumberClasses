@@ -130,6 +130,8 @@ def training(params):
     iteration = 0
     exact_log_like_save = []
     average_loss_save = []
+
+    print("The training data batch size is {}".format(len(batch)))
     batch = batch[0:(len(batch)-5000)]
     data_len = len(batch)
     print("The training data batch size is {}".format(data_len))
