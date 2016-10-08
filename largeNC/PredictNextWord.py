@@ -145,6 +145,11 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
     """
     print("Running the %s estimator test" % estimator_name)
 
+    if os.environ.get("LARGE_CLASS_FOLDER") is not None:
+        data_folder = os.environ["LARGE_CLASS_FOLDER"]
+    else:
+        data_folder = "ProcessedData"
+
     # Set the estimator
     if estimator_name == "BER":
         estimator = BernoulliEstimator()
@@ -161,7 +166,7 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
 
     # Load data
     batch = []
-    with open('ProcessedData/sentences_100000.txt', 'r') as data:
+    with open(os.path.join(data_folder, "sentences_100000.txt"), 'r') as data:
         for d in data:
             d = json.loads(d)
             if len(d) > max_len:
@@ -178,7 +183,7 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
           (float(np.prod(data.shape) * 4.0) / (10.0 ** 6)))
 
     # Initialise sampler
-    with open("ProcessedData/frequency_100000.txt", 'r') as freq:
+    with open(os.path.join(data_folder, "frequency_100000.txt"), 'r') as freq:
         p_dist = json.loads(freq.read())
         num_classes = len(p_dist)
         sampler = Sampler(num_classes, sample_size,
