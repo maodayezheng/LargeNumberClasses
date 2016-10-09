@@ -2,7 +2,6 @@ import tensorflow as tf
 from DataUtils import DataUtils
 from ModelUtils.Sampler.UnigramSampler import UnigramSampler
 from ModelUtils.Estimator.AlexEstimator import AlexEstimator
-from ModelUtils.Estimator.BlackOutEstimator import BlackOutEstimator
 from ModelUtils.Estimator.BernoulliEstimator import BernoulliEstimator
 from ModelUtils.Estimator.ImportanceEstimator import ImportanceEstimator
 from ModelUtils.Estimator.NegativeEstimator import NegativeEstimator
