@@ -299,7 +299,7 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
     print("Compare c to p:", np.max(c[1:]), "-", np.max(p[1:]))
 
     if "full" in data_folder.lower():
-        print("Taking the last 5000 sentences away")
+        print("Taking the last 100,000 sentences away")
         if in_memory:
             data.set_value(data[:-100000].eval())
             data_shape = data.shape.eval()
@@ -344,10 +344,17 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
     loss = np.zeros((D1, ), dtype=theano.config.floatX)
     iter_ll = 0
     exact_ll = np.zeros((D1, ), dtype=theano.config.floatX)
+    exact_ll_full = np.zeros((epochs+1, ), dtype=theano.config.floatX)
+
     print("Start training")
     start_time = time.time()
     many_samples = None
     for e in range(epochs):
+        for i in range(0, (N // (10 * batch_size)) * batch_size * 10, batch_size * 10):
+            exact_ll_full[e] += ll_func(i, i + batch_size * 10)
+        exact_ll_full[e] /= (N // (10 * batch_size))
+        print("Exact full LL for %d epoch: %.3e" % (e, exact_ll_full[e]))
+
         for i in range(0, N, batch_size):
             if iter % record == 0:
                 if iter_ll == exact_ll.shape[0]:
@@ -370,8 +377,9 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
                 loss[iter] = train_func(i, j, many_samples[iter % 100])
             else:
                 loss[iter] = train_func(data[i: j], many_samples[iter % 100])
-            print(loss[iter])
+            # print(loss[iter])
             iter += 1
+        print("Epoch finished")
         # Update learning rates
         l_rate_gru.set_value((l_rate_gru * l_decay).eval())
         l_rate_embed.set_value((l_rate_embed * l_decay).eval())
@@ -381,9 +389,13 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
             shuffle_func(shuffle_index)
         else:
             data = data[shuffle_index]
+    for i in range(0, (N // (10 * batch_size)) * batch_size * 10, batch_size * 10):
+        exact_ll_full[epochs] += ll_func(i, i + batch_size * 10)
+    exact_ll_full[epochs] /= (N // (10 * batch_size))
+    print("Exact full LL for %d epoch: %.3e" % (epochs, exact_ll_full[epochs]))
+    exact_ll_full[epochs] = 0
     loss = loss[:iter]
     exact_ll = exact_ll[:iter_ll]
-
     # file_prefix = "%s_%d_%d_%d_%d_" % (estimator_name, gru_dim, int(100*distortion),
     #                                    int(1000 * l_rate_gru), int(1000 * l_rate_embed))
     file_prefix = ""
@@ -394,6 +406,9 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
     file_name = os.path.join(folder, file_prefix + "ll.csv")
     print("Saving LL to", file_name, "with shape", exact_ll.shape)
     np.savetxt(file_name, exact_ll, delimiter=",")
+    file_name = os.path.join(folder, file_prefix + "ll_full.csv")
+    print("Saving full LL to", file_name, "with shape", exact_ll_full.shape)
+    np.savetxt(file_name, exact_ll_full, delimiter=",")
     file_name = os.path.join(folder, file_prefix + "params.npz")
     params = [embedding_layer.embedding_] + gru.get_params()
     pd = OrderedDict()
