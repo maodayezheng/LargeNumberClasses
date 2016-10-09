@@ -24,8 +24,89 @@ def make_shuffle_function(data):
     return theano.function([rand_ind], updates=updates)
 
 
+def sgd_update_embed(embed_matrix, outs, index, cost, lr_rate):
+    updates = OrderedDict()
+    grad = theano.grad(cost, outs)
+    updates[embed_matrix] = T.inc_subtensor(outs, - lr_rate * grad)
+    return updates
+
+
+def sgd(params, cost, lr_rate, updates):
+    for p, g in zip(params, T.grad(cost, params)):
+        updates[p] = p - lr_rate * g
+    return updates
+
+
+def adam_update_embed(embed_matrix, outs, index, cost, lr_rate,
+                      beta1=0.9, beta2=0.999, epsilon=1e-6):
+    updates = OrderedDict()
+    V = embed_matrix.shape[0].eval()
+    t = theano.shared(np.ones((V, ), dtype=theano.config.floatX))
+    # Using theano constant to prevent upcasting of float32
+    one = T.constant(1)
+    grad = T.grad(cost, outs)
+    # mask = T.neq(index, 0)
+    # grad = grad[mask.nonzero()]
+    # index = index[mask.nonzero()]
+
+    value = embed_matrix.get_value(borrow=True)
+    m_prev = theano.shared(np.zeros(value.shape, dtype=value.dtype),
+                           broadcastable=embed_matrix.broadcastable)
+    v_prev = theano.shared(np.ones(value.shape, dtype=value.dtype),
+                           broadcastable=embed_matrix.broadcastable)
+    # from theano.printing import Print
+    # g = Print("Grad check")(T.stack((T.min(T.abs_(grad)), T.max(T.abs_(grad)))))
+    # grad = T.switch(T.lt(0, 1), grad, g[0])
+    m_t = beta1 * m_prev[index] + (one - beta1) * grad
+    v_t = beta2 * v_prev[index] + (one - beta2) * grad * grad
+    # v = Print("V check")(T.stack((T.min(T.abs_(v_t)), T.max(T.abs_(v_t)))))
+    # v_t = T.switch(T.lt(0, 1), v_t, v[0])
+    a_t = lr_rate * T.sqrt(one - beta2 ** t[index]) / (one - beta1 ** t[index])
+    step = a_t.dimshuffle(0, 'x') * m_t / (T.sqrt(v_t) + epsilon)
+    # step = grad
+    # m_s = Print("m_t shape")(m_t.shape)
+    # v_s = Print("v_t shape")(v_t.shape)
+    # a_s = Print("a_t shape")(a_t.shape)
+    # s_s = Print("step shape")(step.shape)
+    # step = T.switch(T.lt(0, 1), step, m_s[0] + v_s[0] + a_s[0] + s_s[0])
+
+    updates[t] = T.inc_subtensor(t[index], one)
+    updates[m_prev] = T.set_subtensor(m_prev[index], m_t)
+    updates[v_prev] = T.set_subtensor(v_prev[index], v_t)
+    updates[embed_matrix] = T.inc_subtensor(embed_matrix[index], - step)
+    return updates
+
+
+def adam(params, cost, lr_rate, updates,
+         beta1=0.9, beta2=0.999, epsilon=1e-8):
+    t = theano.shared(np.asarray(1.0, theano.config.floatX))
+    # Using theano constant to prevent upcasting of float32
+    one = T.constant(1)
+
+    a_t = lr_rate * T.sqrt(one - beta2 ** t) / (one - beta1 ** t)
+
+    for param, g_t in zip(params, T.grad(cost, params)):
+        value = param.get_value(borrow=True)
+        m_prev = theano.shared(np.zeros(value.shape, dtype=value.dtype),
+                               broadcastable=param.broadcastable)
+        v_prev = theano.shared(np.zeros(value.shape, dtype=value.dtype),
+                               broadcastable=param.broadcastable)
+
+        m_t = beta1 * m_prev + (one - beta1) * g_t
+        v_t = beta2 * v_prev + (one - beta2) * g_t ** 2
+        step = a_t * m_t / (T.sqrt(v_t) + epsilon)
+
+        updates[m_prev] = m_t
+        updates[v_prev] = v_t
+        updates[param] = param - step
+
+    updates[t] = t + one
+    return updates
+
+
 def make_train_function(sampler, data, embedding_layer, gru, estimator,
-                        l_rate_gru, l_rate_embed, lamb=0.0, in_memory=True):
+                        l_rate_gru, l_rate_embed, optim_method="sgd",
+                        lamb=0.0, in_memory=True):
     # Initialise the input nodes
     if in_memory:
         # 1
@@ -85,11 +166,17 @@ def make_train_function(sampler, data, embedding_layer, gru, estimator,
         print("Adding L2 Regularization: %.3f" % lamb)
         loss += lamb * gru.l2_regular()
 
-    grads = theano.grad(loss, [all_embed] + gru.get_params())
-    updates = OrderedDict()
-    for p, g in zip(gru.get_params(), grads[1:]):
-        updates[p] = p - l_rate_gru * g
-    updates[embedding_layer.embedding_] = T.inc_subtensor(all_embed, - l_rate_embed * grads[0])
+    if optim_method == "sgd":
+        updates = sgd_update_embed(embedding_layer.embedding_, all_embed, all_ind, loss, l_rate_embed)
+        updates = sgd(gru.get_params(), loss, l_rate_gru, updates)
+    elif optim_method == "adam":
+        updates = adam_update_embed(embedding_layer.embedding_, all_embed, all_ind, loss, l_rate_embed)
+        updates = adam(gru.get_params(), loss, l_rate_gru, updates)
+    elif optim_method == "sga":
+        updates = sgd_update_embed(embedding_layer.embedding_, all_embed, all_ind, loss, l_rate_embed)
+        updates = adam(gru.get_params(), loss, l_rate_gru, updates)
+    else:
+        raise ValueError("Unrecognized optim_method", optim_method)
 
     if in_memory:
         return theano.function([batch_start_index, batch_end_index, sample_ids],
@@ -150,7 +237,8 @@ def make_ll_function(sampler, data, embedding_layer, gru, estimator, in_memory=T
 def training(estimator_name, folder, sample_size=250, batch_size=100,
              epochs=10, max_len=70,
              embed_dim=100, gru_dim=100, lamb=0.0,
-             l_rate_gru=0.02, l_rate_embed=0.02,
+             l_rate_gru=0.05, l_rate_embed=0.05, l_decay=0.9,
+             optim_method="sga",
              distortion=1.0, record=100, in_memory=True):
     """
     The RNN model to predict next word
@@ -197,19 +285,26 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
     else:
         data = np.stack(batch)
         data_shape = data.shape
-
+    u, c = np.unique(T.flatten(data).eval(), return_counts=True)
+    c[0] = 0
     print("Shape of data:", data_shape, " size in memory: %.2fMB" %
           (float(np.prod(data_shape) * 4.0) / (10.0 ** 6)))
-
-    # Initialise sampler
+    print("Vocabulary size: %d, min count: %d, max_count: %d" %
+          (u.shape[0], np.min(c[1:]), np.max(c[1:])))
+    print("Check u:", u[0], u[-1])
+    c = c / np.sum(c)
     with open(os.path.join(data_folder, "frequency.txt"), 'r') as freq:
         p_dist = json.loads(freq.read())
-        num_classes = len(p_dist)
-        sampler = Sampler(num_classes, sample_size,
-                          proposed_dist=p_dist,
-                          distortion=distortion,
-                          extra=estimator.extra)
-        freq.close()
+
+    p = np.asarray(p_dist)
+    print("Compare c to p:", np.min(c[1:]), "-", np.min(p[1:]))
+    print("Compare c to p:", np.max(c[1:]), "-", np.max(p[1:]))
+
+    num_classes = u.shape[0]
+    sampler = Sampler(num_classes, sample_size,
+                      proposed_dist=c,
+                      distortion=distortion,
+                      extra=estimator.extra)
 
     # Initialise the word embedding layer
     embedding_layer = EmbeddingLayer(num_classes, embed_dim,
@@ -222,8 +317,12 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
     # Make functions
     if in_memory:
         shuffle_func = make_shuffle_function(data)
+    # Learning rates
+    l_rate_gru = theano.shared(np.asarray(l_rate_gru, dtype=theano.config.floatX))
+    l_rate_embed = theano.shared(np.asarray(l_rate_embed, dtype=theano.config.floatX))
+
     train_func = make_train_function(sampler, data, embedding_layer, gru, estimator,
-                                     l_rate_gru, l_rate_embed, lamb, in_memory)
+                                     l_rate_gru, l_rate_embed, optim_method, lamb, in_memory)
     ll_func = make_ll_function(sampler, data, embedding_layer, gru, estimator, in_memory)
 
     # Make index for shuffling
@@ -234,6 +333,7 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
     loss = np.zeros((D1, ), dtype=theano.config.floatX)
     iter_ll = 0
     exact_ll = np.zeros((D1, ), dtype=theano.config.floatX)
+    print("Start training")
     start_time = time.time()
     many_samples = None
     for e in range(epochs):
@@ -259,7 +359,11 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
                 loss[iter] = train_func(i, j, many_samples[iter % 100])
             else:
                 loss[iter] = train_func(data[i: j], many_samples[iter % 100])
+            print(loss[iter])
             iter += 1
+        # Update learning rates
+        l_rate_gru.set_value((l_rate_gru * l_decay).eval())
+        l_rate_embed.set_value((l_rate_embed * l_decay).eval())
         # Shuffle data
         np.random.shuffle(shuffle_index)
         if in_memory:

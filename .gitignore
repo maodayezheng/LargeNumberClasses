@@ -92,5 +92,8 @@ ENV/
 
 .idea/
 bin/test/
+bin/ProcessedData/
+bin/ProcessedFull/
+
 submit.sh
 

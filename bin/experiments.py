@@ -43,14 +43,18 @@ def main():
                         help="L2 Penalty",
                         type=float,
                         default=0.0)
+    parser.add_argument("-om", "--optim_method",
+                        help="sgd or adam",
+                        type=str,
+                        default="sga")
     parser.add_argument("-lrg", "--l_rate_gru",
                         help="Learning rate for the parameters of the GRU",
                         type=float,
-                        default=0.02)
+                        default=0.05)
     parser.add_argument("-lre", "--l_rate_embed",
                         help="Learning rate for the parameters of the embeddings",
                         type=float,
-                        default=0.02)
+                        default=0.05)
     parser.add_argument("-d", "--distortion",
                         help="Distortion applied to the Unigram frequencies",
                         type=float,
