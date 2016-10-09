@@ -104,7 +104,7 @@ def training(params):
     exact_log_like = estimator.log_likelihood(targets, target_states, embedding)
 
     # Training Loss
-    objective = loss
+    objective = loss + cell.l2_regular() * lamb
     l_rate = tf.train.exponential_decay(l_rate, decay, 1, 0.9)
     update = tf.train.GradientDescentOptimizer(l_rate).minimize(objective)
 
