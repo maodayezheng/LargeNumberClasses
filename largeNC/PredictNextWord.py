@@ -354,7 +354,7 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
     print("Start training")
     start_time = time.time()
     many_samples = None
-    be = 1500
+    be = 1000
     for e in range(epochs):
         # Calculate exact LL
         for i in range(0, (N // be) * be, be):
