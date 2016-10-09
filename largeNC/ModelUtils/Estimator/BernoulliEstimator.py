@@ -10,7 +10,7 @@ class BernoulliEstimator(Estimator):
         super(BernoulliEstimator, self).__init__(10)
 
     def loss(self, h, targets, target_ids, target_qs,
-             samples, sample_ids, sample_qs, eps=1e-9):
+             samples, sample_ids, sample_qs, eps=1e-8):
         """
         Calculate the estimate loss of blackout approximation
         :param h: NxD
@@ -20,6 +20,7 @@ class BernoulliEstimator(Estimator):
         :param samples: KxD
         :param sample_ids: K
         :param sample_qs: K
+        :param eps: conditioning number
         :return:
         """
         # N
@@ -36,6 +37,6 @@ class BernoulliEstimator(Estimator):
         # Take a standard softmax
         softmax = T.nnet.softmax(merged)
         # Need only first column
-        element_loss = T.log(softmax[:, 0])
+        element_loss = T.log(softmax[:, 0] + eps)
         loss = T.mean(element_loss)
         return -loss

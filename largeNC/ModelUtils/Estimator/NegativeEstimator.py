@@ -16,6 +16,7 @@ class NegativeEstimator(Estimator):
         :param samples: KxD
         :param sample_ids: K
         :param sample_qs: K
+        :param eps: conditioning number
         :return:
         """
         # N

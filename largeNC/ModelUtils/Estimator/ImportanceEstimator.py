@@ -16,7 +16,7 @@ class ImportanceEstimator(Estimator):
         :param samples: KxD
         :param sample_ids: K
         :param sample_qs: K
-        :param eps: scalar for conditioning the loss
+        :param eps: conditioning number
         :return:
         """
         # N

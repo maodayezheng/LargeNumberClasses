@@ -28,6 +28,7 @@ class BlackOutEstimator(Estimator):
         :param samples: KxD
         :param sample_ids: K
         :param sample_qs: K
+        :param eps: conditioning number
         :return:
         """
         # si = theano.shared(np.random.randint(0, 5, (12, )).astype("int32"))
@@ -54,7 +55,7 @@ class BlackOutEstimator(Estimator):
         ts = softmax[:, 0]
         # All other columns are the negative scores
         ns = softmax[:, 0:]
-        element_loss = T.log(ts) + T.sum(T.log(1 - ns), axis=1)
+        element_loss = T.log(ts + eps) + T.sum(T.log(1 - ns + eps), axis=1)
         loss = T.mean(element_loss)
         return -loss
         #
