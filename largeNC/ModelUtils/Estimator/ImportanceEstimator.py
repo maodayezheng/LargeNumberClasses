@@ -6,7 +6,7 @@ import theano.tensor as T
 
 class ImportanceEstimator(Estimator):
     def loss(self, h, targets, target_ids, target_qs,
-             samples, sample_ids, sample_qs, eps=1e-9):
+             samples, sample_ids, sample_qs, eps=1e-8):
         """
          Calculate the estimate loss of negative sampling approximation
         :param h: NxD
@@ -16,6 +16,7 @@ class ImportanceEstimator(Estimator):
         :param samples: KxD
         :param sample_ids: K
         :param sample_qs: K
+        :param eps: scalar for conditioning the loss
         :return:
         """
         # N
@@ -26,7 +27,7 @@ class ImportanceEstimator(Estimator):
         # N x (K + 1)
         merged = T.concatenate((target_scores.dimshuffle(0, 'x'), samples_scores), axis=1)
         softmax = T.nnet.softmax(merged)
-        element_loss = T.log(softmax[:, 0]) - T.log(1.0 - softmax[:, 0])
+        element_loss = T.log(softmax[:, 0] + eps) - T.log(1.0 - softmax[:, 0] + eps)
         loss = T.mean(element_loss)
         return -loss
 
