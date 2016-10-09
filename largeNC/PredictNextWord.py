@@ -302,10 +302,12 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
         print("Taking the last 100,000 sentences away")
         if in_memory:
             test_data = theano.shared(data[-100000:].eval())
+            test_shape = test_data.shape.eval()
             data.set_value(data[:-100000].eval())
             data_shape = data.shape.eval()
         else:
             test_data = data[-100000:]
+            test_shape = test_data.shape
             data = data[:-100000]
             data_shape = data.shape
         print("Shape of training data:", data_shape, " size in memory: %.2fMB" %
@@ -314,6 +316,7 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
               (u.shape[0], np.min(c[1:]), np.max(c[1:])))
     else:
         test_data = data
+        test_shape = data_shape
 
     num_classes = u.shape[0]
     sampler = Sampler(num_classes, sample_size,
@@ -343,6 +346,7 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
 
     # Make index for shuffling
     N = data_shape[0]
+    NT = test_shape[0]
     shuffle_index = np.arange(N, dtype="int32")
     D1 = 10000
     iter = 0
@@ -362,9 +366,12 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
         exact_ll_full[e] /= N // be
         print("Exact full LL for %d epoch: %.3e, Time: %.2f" % (e, exact_ll_full[e], time.time() - start_time))
         # Calculate exact Test LL
-        for i in range(0, (N // be) * be, be):
-            test_ll_full[e] += ll_test_func(i, i + be)
-        test_ll_full[e] /= N // be
+        if "full" in data_folder.lower():
+            test_ll_full[e] = exact_ll_full[e]
+        else:
+            for i in range(0, (NT // be) * be, be):
+                test_ll_full[e] += ll_test_func(i, i + be)
+            test_ll_full[e] /= NT // be
         print("Exact test LL for %d epoch: %.3e, Time: %.2f" % (e, test_ll_full[e], time.time() - start_time))
         for i in range(0, N, batch_size):
             if iter % record == 0:
@@ -406,9 +413,12 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
     exact_ll_full[epochs] /= N // be
     print("Exact full LL for %d epoch: %.3e, Time: %.2f" % (epochs, exact_ll_full[epochs], time.time() - start_time))
     # Calculate exact Test LL
-    for i in range(0, (N // be) * be, be):
-        test_ll_full[epochs] += ll_test_func(i, i + be)
-    test_ll_full[epochs] /= N // be
+    if "full" in data_folder.lower():
+        test_ll_full[epochs] = exact_ll_full[epochs]
+    else:
+        for i in range(0, (NT // be) * be, be):
+            test_ll_full[epochs] += ll_test_func(i, i + be)
+        test_ll_full[epochs] /= NT // be
     print("Exact test LL for %d epoch: %.3e, Time: %.2f" % (epochs, test_ll_full[epochs], time.time() - start_time))
     # Cut of what is not needed
     loss = loss[:iter]
