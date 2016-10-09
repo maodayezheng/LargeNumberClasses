@@ -287,10 +287,8 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
         data_shape = data.shape
     u, c = np.unique(T.flatten(data).eval(), return_counts=True)
     c[0] = 0
-    print("Shape of data:", data_shape, " size in memory: %.2fMB" %
+    print("Shape of original data:", data_shape, " size in memory: %.2fMB" %
           (float(np.prod(data_shape) * 4.0) / (10.0 ** 6)))
-    print("Vocabulary size: %d, min count: %d, max_count: %d" %
-          (u.shape[0], np.min(c[1:]), np.max(c[1:])))
     print("Check u:", u[0], u[-1])
     c = c / np.sum(c)
     with open(os.path.join(data_folder, "frequency.txt"), 'r') as freq:
@@ -299,6 +297,19 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
     p = np.asarray(p_dist)
     print("Compare c to p:", np.min(c[1:]), "-", np.min(p[1:]))
     print("Compare c to p:", np.max(c[1:]), "-", np.max(p[1:]))
+
+    if "full" in data_folder.lower():
+        print("Taking the last 5000 sentences away")
+        if in_memory:
+            data.set_value(data[:-100000].eval())
+            data_shape = data.shape.eval()
+        else:
+            data = data[:-100000]
+            data_shape = data.shape
+        print("Shape of training data:", data_shape, " size in memory: %.2fMB" %
+              (float(np.prod(data_shape) * 4.0) / (10.0 ** 6)))
+        print("Vocabulary size: %d, min count: %d, max_count: %d" %
+              (u.shape[0], np.min(c[1:]), np.max(c[1:])))
 
     num_classes = u.shape[0]
     sampler = Sampler(num_classes, sample_size,
