@@ -64,10 +64,10 @@ class AlexEstimator(Estimator):
         # N
         ll1 = T.mean(T.log(target_softmax))
 
-        target_scores = all_scores[T.arange(target_ids.shape[0]), target_ids]
-        target_scores, all_scores = Estimator.clip_likelihood(target_scores, all_scores)
-        Z = T.sum(T.exp(all_scores), 1)
-        ll2 = T.mean(target_scores - T.log(Z))
-        loss = Print("Difference")(ll1 - ll2)
-        return ll2
+        # target_scores = all_scores[T.arange(target_ids.shape[0]), target_ids]
+        # target_scores, all_scores = Estimator.clip_likelihood(target_scores, all_scores)
+        # Z = T.sum(T.exp(all_scores), 1)
+        # ll2 = T.mean(target_scores - T.log(Z))
+        # loss = Print("Difference")(ll1 - ll2)
+        return ll1
 

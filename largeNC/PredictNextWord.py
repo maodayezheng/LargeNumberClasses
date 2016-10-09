@@ -3,6 +3,7 @@ import json
 import numpy as np
 import theano.tensor as T
 import theano
+from theano.printing import Print
 from collections import OrderedDict
 import os
 import time
@@ -24,27 +25,36 @@ def make_shuffle_function(data):
     return theano.function([rand_ind], updates=updates)
 
 
-def sgd_update_embed(embed_matrix, outs, index, cost, lr_rate):
+def sgd_update_embed(embed_matrix, outs, index, cost, lr_rate, check=False):
     updates = OrderedDict()
     grad = theano.grad(cost, outs)
+    if check:
+        g = theano.shared(np.zeros((2, ), dtype=theano.config.floatX))
+        updates[g] = Print("Grad embed:")(T.stack((T.min(T.abs_(grad)), T.max(T.abs_(grad)))))
     updates[embed_matrix] = T.inc_subtensor(outs, - lr_rate * grad)
     return updates
 
 
-def sgd(params, cost, lr_rate, updates):
-    for p, g in zip(params, T.grad(cost, params)):
-        updates[p] = p - lr_rate * g
+def sgd(params, cost, lr_rate, updates, check=False):
+    for p, grad in zip(params, T.grad(cost, params)):
+        if check:
+            g = theano.shared(np.zeros((2,), dtype=theano.config.floatX))
+            updates[g] = Print("Grad " + p.name + ":")(T.stack((T.min(T.abs_(grad)), T.max(T.abs_(grad)))))
+        updates[p] = p - lr_rate * grad
     return updates
 
 
 def adam_update_embed(embed_matrix, outs, index, cost, lr_rate,
-                      beta1=0.9, beta2=0.999, epsilon=1e-6):
+                      beta1=0.9, beta2=0.999, epsilon=1e-6, check=False):
     updates = OrderedDict()
     V = embed_matrix.shape[0].eval()
     t = theano.shared(np.ones((V, ), dtype=theano.config.floatX))
     # Using theano constant to prevent upcasting of float32
     one = T.constant(1)
     grad = T.grad(cost, outs)
+    if check:
+        g = theano.shared(np.zeros((2,), dtype=theano.config.floatX))
+        updates[g] = Print("Grad embed:")(T.stack((T.min(T.abs_(grad)), T.max(T.abs_(grad)))))
     # mask = T.neq(index, 0)
     # grad = grad[mask.nonzero()]
     # index = index[mask.nonzero()]
@@ -78,27 +88,31 @@ def adam_update_embed(embed_matrix, outs, index, cost, lr_rate,
 
 
 def adam(params, cost, lr_rate, updates,
-         beta1=0.9, beta2=0.999, epsilon=1e-8):
+         beta1=0.9, beta2=0.999, epsilon=1e-8, check=False):
     t = theano.shared(np.asarray(1.0, theano.config.floatX))
     # Using theano constant to prevent upcasting of float32
     one = T.constant(1)
 
     a_t = lr_rate * T.sqrt(one - beta2 ** t) / (one - beta1 ** t)
 
-    for param, g_t in zip(params, T.grad(cost, params)):
-        value = param.get_value(borrow=True)
-        m_prev = theano.shared(np.zeros(value.shape, dtype=value.dtype),
-                               broadcastable=param.broadcastable)
-        v_prev = theano.shared(np.zeros(value.shape, dtype=value.dtype),
-                               broadcastable=param.broadcastable)
+    for p, grad in zip(params, T.grad(cost, params)):
+        if check:
+            g = theano.shared(np.zeros((2,), dtype=theano.config.floatX))
+            updates[g] = Print("Grad " + p.name + ":")(T.stack((T.min(T.abs_(grad)), T.max(T.abs_(grad)))))
 
-        m_t = beta1 * m_prev + (one - beta1) * g_t
-        v_t = beta2 * v_prev + (one - beta2) * g_t ** 2
+        value = p.get_value(borrow=True)
+        m_prev = theano.shared(np.zeros(value.shape, dtype=value.dtype),
+                               broadcastable=p.broadcastable)
+        v_prev = theano.shared(np.zeros(value.shape, dtype=value.dtype),
+                               broadcastable=p.broadcastable)
+
+        m_t = beta1 * m_prev + (one - beta1) * grad
+        v_t = beta2 * v_prev + (one - beta2) * grad ** 2
         step = a_t * m_t / (T.sqrt(v_t) + epsilon)
 
         updates[m_prev] = m_t
         updates[v_prev] = v_t
-        updates[param] = param - step
+        updates[p] = p - step
 
     updates[t] = t + one
     return updates
@@ -106,7 +120,7 @@ def adam(params, cost, lr_rate, updates,
 
 def make_train_function(sampler, data, embedding_layer, gru, estimator,
                         l_rate_gru, l_rate_embed, optim_method="sgd",
-                        lamb=0.0, in_memory=True):
+                        lamb=0.0, in_memory=True, check=False):
     # Initialise the input nodes
     if in_memory:
         # 1
@@ -167,14 +181,14 @@ def make_train_function(sampler, data, embedding_layer, gru, estimator,
         loss += lamb * gru.l2_regular()
 
     if optim_method == "sgd":
-        updates = sgd_update_embed(embedding_layer.embedding_, all_embed, all_ind, loss, l_rate_embed)
-        updates = sgd(gru.get_params(), loss, l_rate_gru, updates)
+        updates = sgd_update_embed(embedding_layer.embedding_, all_embed, all_ind, loss, l_rate_embed, check=check)
+        updates = sgd(gru.get_params(), loss, l_rate_gru, updates, check=check)
     elif optim_method == "adam":
-        updates = adam_update_embed(embedding_layer.embedding_, all_embed, all_ind, loss, l_rate_embed)
-        updates = adam(gru.get_params(), loss, l_rate_gru, updates)
+        updates = adam_update_embed(embedding_layer.embedding_, all_embed, all_ind, loss, l_rate_embed, check=check)
+        updates = adam(gru.get_params(), loss, l_rate_gru, updates, check=check)
     elif optim_method == "sga":
-        updates = sgd_update_embed(embedding_layer.embedding_, all_embed, all_ind, loss, l_rate_embed)
-        updates = adam(gru.get_params(), loss, l_rate_gru, updates)
+        updates = sgd_update_embed(embedding_layer.embedding_, all_embed, all_ind, loss, l_rate_embed, check=check)
+        updates = adam(gru.get_params(), loss, l_rate_gru, updates, check=check)
     else:
         raise ValueError("Unrecognized optim_method", optim_method)
 
@@ -238,7 +252,7 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
              epochs=10, max_len=70,
              embed_dim=100, gru_dim=100, lamb=0.0,
              l_rate_gru=0.05, l_rate_embed=0.05, l_decay=0.9,
-             optim_method="sga",
+             optim_method="sga", check=False,
              distortion=1.0, record=100, in_memory=True):
     """
     The RNN model to predict next word
@@ -286,7 +300,7 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
         data = np.stack(batch)
         data_shape = data.shape
     u, c = np.unique(T.flatten(data).eval(), return_counts=True)
-    c[0] = 0
+    c[0] = np.min(c[1:])
     print("Shape of original data:", data_shape, " size in memory: %.2fMB" %
           (float(np.prod(data_shape) * 4.0) / (10.0 ** 6)))
     print("Check u:", u[0], u[-1])
@@ -340,7 +354,7 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
     l_rate_embed = theano.shared(np.asarray(l_rate_embed, dtype=theano.config.floatX))
 
     train_func = make_train_function(sampler, data, embedding_layer, gru, estimator,
-                                     l_rate_gru, l_rate_embed, optim_method, lamb, in_memory)
+                                     l_rate_gru, l_rate_embed, optim_method, lamb, in_memory, check=check)
     ll_func = make_ll_function(sampler, data, embedding_layer, gru, estimator, in_memory)
     ll_test_func = make_ll_function(sampler, test_data, embedding_layer, gru, estimator, in_memory)
 
@@ -360,19 +374,20 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
     many_samples = None
     be = 1000
     for e in range(epochs):
-        # Calculate exact LL
-        for i in range(0, (N // be) * be, be):
-            exact_ll_full[e] += ll_func(i, i + be)
-        exact_ll_full[e] /= N // be
-        print("Exact full LL for %d epoch: %.3e, Time: %.2f" % (e, exact_ll_full[e], time.time() - start_time))
-        # Calculate exact Test LL
-        if "full" in data_folder.lower():
-            test_ll_full[e] = exact_ll_full[e]
-        else:
-            for i in range(0, (NT // be) * be, be):
-                test_ll_full[e] += ll_test_func(i, i + be)
-            test_ll_full[e] /= NT // be
-        print("Exact test LL for %d epoch: %.3e, Time: %.2f" % (e, test_ll_full[e], time.time() - start_time))
+        if not check:
+            # Calculate exact LL
+            for i in range(0, (N // be) * be, be):
+                exact_ll_full[e] += ll_func(i, i + be)
+            exact_ll_full[e] /= N // be
+            print("Exact full LL for %d epoch: %.3e, Time: %.2f" % (e, exact_ll_full[e], time.time() - start_time))
+            # Calculate exact Test LL
+            if "full" in data_folder.lower():
+                for i in range(0, (NT // be) * be, be):
+                    test_ll_full[e] += ll_test_func(i, i + be)
+                test_ll_full[e] /= NT // be
+            else:
+                test_ll_full[e] = exact_ll_full[e]
+            print("Exact test LL for %d epoch: %.3e, Time: %.2f" % (e, test_ll_full[e], time.time() - start_time))
         for i in range(0, N, batch_size):
             if iter % record == 0:
                 if iter_ll == exact_ll.shape[0]:
@@ -407,19 +422,20 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
             shuffle_func(shuffle_index)
         else:
             data = data[shuffle_index]
-    # Calculate exact LL
-    for i in range(0, (N // be) * be, be):
-        exact_ll_full[epochs] += ll_func(i, i + be)
-    exact_ll_full[epochs] /= N // be
-    print("Exact full LL for %d epoch: %.3e, Time: %.2f" % (epochs, exact_ll_full[epochs], time.time() - start_time))
-    # Calculate exact Test LL
-    if "full" in data_folder.lower():
-        test_ll_full[epochs] = exact_ll_full[epochs]
-    else:
-        for i in range(0, (NT // be) * be, be):
-            test_ll_full[epochs] += ll_test_func(i, i + be)
-        test_ll_full[epochs] /= NT // be
-    print("Exact test LL for %d epoch: %.3e, Time: %.2f" % (epochs, test_ll_full[epochs], time.time() - start_time))
+    if not check:
+        # Calculate exact LL
+        for i in range(0, (N // be) * be, be):
+            exact_ll_full[epochs] += ll_func(i, i + be)
+        exact_ll_full[epochs] /= N // be
+        print("Exact full LL for %d epoch: %.3e, Time: %.2f" % (epochs, exact_ll_full[epochs], time.time() - start_time))
+        # Calculate exact Test LL
+        if "full" in data_folder.lower():
+            for i in range(0, (NT // be) * be, be):
+                test_ll_full[epochs] += ll_test_func(i, i + be)
+            test_ll_full[epochs] /= NT // be
+        else:
+            test_ll_full[epochs] = exact_ll_full[epochs]
+        print("Exact test LL for %d epoch: %.3e, Time: %.2f" % (epochs, test_ll_full[epochs], time.time() - start_time))
     # Cut of what is not needed
     loss = loss[:iter]
     exact_ll = exact_ll[:iter_ll]

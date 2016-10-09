@@ -55,6 +55,8 @@ def main():
                         help="Learning rate for the parameters of the embeddings",
                         type=float,
                         default=0.05)
+    parser.add_argument("-c", dest="check", action="store_true")
+    parser.set_defaults(check=False)
     parser.add_argument("-d", "--distortion",
                         help="Distortion applied to the Unigram frequencies",
                         type=float,
