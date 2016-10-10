@@ -143,7 +143,7 @@ def create_vocabulary(source_path, vocab_size=40000):
         processed_text.append(s)
 
     print ("The length of processed text is {}".format(total))
-
+    total += 2*sentence_count
     for i in range(len(frequency)):
         frequency[i] /= float(total)
 
