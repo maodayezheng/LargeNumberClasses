@@ -31,6 +31,8 @@ class BernoulliEstimator(Estimator):
         samples_scores = tf.matmul(h, samples, transpose_b=True)
         # N x KE - Effectively making exp(ss) = exp(s) / weights
         samples_scores -= tf.log(weights)
+        # N x KE
+        samples_scores += tf.expand_dims(tf.log(1-q), 1)
         # N x K
         samples_scores = self.get_unique(samples_scores)
         # N - Conditioning

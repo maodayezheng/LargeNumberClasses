@@ -64,6 +64,8 @@ def create_vocabulary(source_path, vocab_size=40000):
                 print("Load {} from txt".format(iters))
             sentence = clean_str(s)
             sentence.pop()
+            if len(sentence) > 68:
+                continue
             sentences.append(sentence)
             words += sentence
         text.close()
