@@ -16,6 +16,8 @@ from .ModelUtils.Estimator.BernoulliEstimator import BernoulliEstimator
 from .ModelUtils.Estimator.ImportanceEstimator import ImportanceEstimator
 from .ModelUtils.Estimator.BlackOutEstimator import BlackOutEstimator
 from .ModelUtils.Estimator.NegativeEstimator import NegativeEstimator
+from .ModelUtils.Estimator.RankingHinge import RankingHingeEstimator
+from .ModelUtils.Estimator.RankingOurs import RankingOursEstimator
 
 
 def make_shuffle_function(data):
@@ -277,6 +279,10 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
         estimator = BlackOutEstimator()
     elif estimator_name == "ALEX":
         estimator = AlexEstimator()
+    elif estimator_name == "RH":
+        estimator = RankingHingeEstimator()
+    elif estimator_name == "RO":
+        estimator = RankingOursEstimator()
     else:
         raise Exception("{} type estimator is not supported".format(estimator_name))
 
