@@ -2,6 +2,7 @@ from __future__ import print_function
 from .Estimator import Estimator
 
 import theano.tensor as T
+from theano.gradient import zero_grad
 
 
 class ImportanceEstimator(Estimator):
@@ -25,9 +26,13 @@ class ImportanceEstimator(Estimator):
         samples_scores = T.dot(h, samples.T)
         samples_scores -= T.log(sample_qs).dimshuffle('x', 0)
         # N x (K + 1)
-        merged = T.concatenate((target_scores.dimshuffle(0, 'x'), samples_scores), axis=1)
-        softmax = T.nnet.softmax(merged)
-        element_loss = T.log(softmax[:, 0] + eps) - T.log(1.0 - softmax[:, 0] + eps)
+        max_t = T.max(samples_scores, axis=1)
+        max_t = zero_grad(max_t)
+        samples_scores = samples_scores - max_t.dimshuffle(0, 'x')
+        target_scores = target_scores - max_t
+        Z = T.sum(T.exp(samples_scores), axis=1)
+
+        element_loss = target_scores - T.log(Z)
         loss = T.mean(element_loss)
         return -loss
 
