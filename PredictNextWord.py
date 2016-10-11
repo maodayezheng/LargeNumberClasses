@@ -11,6 +11,9 @@ from ModelUtils.Estimator.BernoulliEstimator import BernoulliEstimator
 from ModelUtils.Estimator.ImportanceEstimator import ImportanceEstimator
 from ModelUtils.Estimator.BlackOutEstimator import BlackOutEstimator
 from ModelUtils.Estimator.NegativeEstimator import NegativeEstimator
+from ModelUtils.Estimator.RankingHingeEstimator import RankingHingeEstimator
+from ModelUtils.Estimator.RankingOursEstimator import RankingOursEstimator
+
 
 
 def training(params):
@@ -44,7 +47,7 @@ def training(params):
     decay = tf.placeholder(tf.int64,shape=None, name="decay_step")
     # Initialise sampler and loss estimator
     sampler = None
-    with open("ProcessedData/frequency.txt", 'r') as freq:
+    with open("ProcessedData/frequency_100000.txt", 'r') as freq:
             p_dist = json.loads(freq.read())
             num_classes = len(p_dist)
             sampler = UnigramSampler(num_classes, sample_size, proposed_dist=p_dist, distortion=distortion)
@@ -60,6 +63,10 @@ def training(params):
         estimator = BlackOutEstimator(sampler)
     elif estimator_type is "ALEX":
         estimator = AlexEstimator(sampler)
+    elif estimator_type is "RANKH":
+        estimator = RankingHingeEstimator(sampler)
+    elif estimator_type is "RANKO":
+        estimator = RankingOursEstimator(sampler)
     else:
         raise Exception("{} type estimator is not support".format(estimator_type))
 
@@ -117,7 +124,7 @@ def training(params):
     # Get the training batch
     print("Start Training")
     batch = []
-    with open('ProcessedData/sentences.txt', 'r') as data:
+    with open('ProcessedData/sentences_100000.txt', 'r') as data:
         for d in data:
             d = json.loads(d)
             if len(d) > sentence_len:

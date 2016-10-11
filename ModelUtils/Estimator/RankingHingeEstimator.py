@@ -4,9 +4,9 @@ from .Estimator import Estimator
 import tensorflow as tf
 
 
-class RankingOursEstimator(Estimator):
+class RankingHingeEstimator(Estimator):
     def __init__(self):
-        super(RankingOursEstimator, self).__init__(10)
+        super(RankingHingeEstimator, self).__init__(10)
 
     def loss(self, x, h, q = None, eps=1e-9):
         """
@@ -23,7 +23,6 @@ class RankingOursEstimator(Estimator):
         samples = self.get_samples()
         if samples is None:
             raise ValueError("samples must be set")
-
 
         # N
         target_scores = tf.reduce_sum(x * h, 1)
