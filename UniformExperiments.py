@@ -14,7 +14,7 @@ def main():
     for e in estimator_types:
         for d in distortions:
             params["estimator_type"] = e
-            params["distrotion"] = d
+            params["distortion"] = d
             PredictNextWord.training(params)
 
 main()
