@@ -14,6 +14,7 @@ from .ModelUtils.Sampler.Sampler import Sampler
 from .ModelUtils.Estimator.AlexEstimator import AlexEstimator
 from .ModelUtils.Estimator.BernoulliEstimator import BernoulliEstimator
 from .ModelUtils.Estimator.ImportanceEstimator import ImportanceEstimator
+from .ModelUtils.Estimator.ImportanceTwoEstimator import ImportanceTwoEstimator
 from .ModelUtils.Estimator.BlackOutEstimator import BlackOutEstimator
 from .ModelUtils.Estimator.NegativeEstimator import NegativeEstimator
 from .ModelUtils.Estimator.RankingHinge import RankingHingeEstimator
@@ -283,6 +284,8 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
         estimator = RankingHingeEstimator()
     elif estimator_name == "RO":
         estimator = RankingOursEstimator()
+    elif estimator_name == "IST":
+        estimator = ImportanceTwoEstimator()
     else:
         raise Exception("{} type estimator is not supported".format(estimator_name))
 

@@ -1,7 +1,13 @@
 from __future__ import print_function
 from .Estimator import Estimator
 
+from theano.printing import Print
 import theano.tensor as T
+
+
+def theano_print(var, msg):
+    pr = Print(msg)(T.stack(T.min(var), T.max(var)))
+    return T.switch(T.lt(0, 1), var, pr[0])
 
 
 class RankingOursEstimator(Estimator):
@@ -27,9 +33,10 @@ class RankingOursEstimator(Estimator):
         # N x KE
         samples_scores = T.dot(h, samples.T)
         # Removing log Q\i(k) = log Q(k) - log(1.0 - Q(i))
-        samples_scores = samples_scores - \
-            T.log(sample_qs).dimshuffle('x', 0) + \
+        a = - T.log(sample_qs).dimshuffle('x', 0) + \
             T.log(T.constant(1) - target_qs).dimshuffle(0, 'x')
+        # a = theano_print(a, "a")
+        samples_scores = samples_scores + a
         # N x K
         samples_scores = self.get_unique(target_ids, sample_ids, samples_scores)
         # N
