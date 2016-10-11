@@ -10,7 +10,7 @@ def main():
               "sentence_len": 70, "epoch": 10, "input_dim": 100, "hidden_dim": 100,
               "output_dim": 100,
               "lamb": 0.001, "l_rate": 0.02, "save_step": 2000}
-    distortions = [0.0, 0.75, 1.0]
+    distortions = [0.75, 1.0]
     for e in estimator_types:
         for d in distortions:
             params["estimator_type"] = e
