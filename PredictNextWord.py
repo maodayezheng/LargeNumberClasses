@@ -186,7 +186,7 @@ def training(params):
 
     word_embedding.save_param(session, "ModelParams/")
     cell.save_param(session, "ModelParams/")
-    np.savetxt("ModelParams/" + sampler_type + "_" + estimator_type + "_" + str(distortion) + "_exact_like.txt",
+    np.savetxt("ModelParams/" + sampler_type + "_" + estimator_type + "_" + str(distortion) + "_exact_like_100000.txt",
                exact_log_like_save)
-    np.savetxt("ModelParams/" + sampler_type + "_" + estimator_type + "_" + str(distortion) + "_loss.txt",
+    np.savetxt("ModelParams/" + sampler_type + "_" + estimator_type + "_" + str(distortion) + "_loss_100000.txt",
                average_loss_save)
