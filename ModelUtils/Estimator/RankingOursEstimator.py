@@ -35,6 +35,6 @@ class RankingOursEstimator(Estimator):
         # N x K
         samples_scores = self.get_unique(samples_scores)
         # N
-        element_loss = - tf.nn.softplus(samples_scores - tf.expand_dims(target_scores))
+        element_loss = - tf.nn.softplus(samples_scores - tf.expand_dims(target_scores, 1))
         loss = tf.reduce_mean(element_loss)
         return -loss
