@@ -5,8 +5,8 @@ import tensorflow as tf
 
 
 class RankingHingeEstimator(Estimator):
-    def __init__(self):
-        super(RankingHingeEstimator, self).__init__(10)
+    def __init__(self,*args, **kwargs):
+        super(RankingHingeEstimator, self).__init__(extra=10, *args, **kwargs)
 
     def loss(self, x, h, q = None, eps=1e-9):
         """
