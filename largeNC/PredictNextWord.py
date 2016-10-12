@@ -355,7 +355,7 @@ def training(estimator_name, folder, batch_size=100,
             batch = data[i: j]
             unique_id, inverse_index = np.unique(batch, return_inverse=True)
             loss[iter] = train_func(unique_id.astype("int32"), inverse_index.reshape(batch.shape).astype("int32"))
-            print(loss[iter])
+            # print(loss[iter])
             iter += 1
         print("Epoch finished")
         # Update learning rates
