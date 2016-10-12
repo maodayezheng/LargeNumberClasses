@@ -3,43 +3,39 @@ from .Estimator import Estimator
 
 import theano.tensor as T
 from theano.gradient import zero_grad
-
+import theano
 
 class ImportanceEstimator(Estimator):
-    def loss(self, h, targets, target_ids, target_qs,
-             samples, sample_ids, sample_qs, eps=1e-8):
+    def loss(self, h, targets, target_sub_ids, unique_embed, unique_ids, unique_qs, eps=1e-8):
         """
-         Calculate the estimate loss of negative sampling approximation
+        Calculate the estimate loss of blackout approximation
         :param h: NxD
         :param targets: NxD
-        :param target_ids: N
-        :param target_qs: N
-        :param samples: KxD
-        :param sample_ids: K
-        :param sample_qs: K
+        :param target_sub_ids: N
+        :param unique_embed: UxD
+        :param unique_ids: U
+        :param unique_qs: U
         :param eps: conditioning number
         :return:
         """
         # N
-        target_scores = T.sum(h * targets, 1)
-        # N x K
-        samples_scores = T.dot(h, samples.T)
-        samples_scores -= T.log(sample_qs).dimshuffle('x', 0)
-        # N x (K + 1)
-        max_t = T.max(samples_scores, axis=1)
-        max_t = zero_grad(max_t)
-        samples_scores = samples_scores - max_t.dimshuffle(0, 'x')
-        target_scores = target_scores - max_t
-        Z = T.sum(T.exp(samples_scores), axis=1)
-
-        element_loss = target_scores - T.log(Z)
+        # target_scores = T.sum(h * targets, 1)
+        # N x U
+        all_scores = T.dot(h, unique_embed.T)
+        # all_scores = theano_print_shape(all_scores, "shapes")
+        # all_scores = theano_print_min_max(all_scores, "min/max")
+        # N
+        m_t = theano.gradient.zero_grad(T.max(all_scores, axis=1))
+        # m_t = theano_print_shape(m_t, "m_t shape")
+        # m_t = theano_print_min_max(m_t, "m_t min/max")
+        all_scores = all_scores - m_t.dimshuffle(0, 'x')
+        soft = T.nnet.softmax(all_scores)[T.arange(target_sub_ids.shape[0]), target_sub_ids]
+        element_loss = T.log(soft)
+        # N
+        # Z = T.sum(T.exp(all_scores), axis=1)
+        # Need only first column
+        # element_loss = target_scores - T.log(Z)
         loss = T.mean(element_loss)
-        return -loss
-
-        # Condition scores
-        # target_scores, samples_scores = Estimator.clip_likelihood(target_scores, samples_scores)
-        # # N
-        # Z = T.sum(T.exp(samples_scores), 1)
-        # element_loss = target_scores - T.log(Z + eps)
-        # loss = T.mean(element_loss)
-        # return -loss
+        # N
+        element_logvar = T.log(T.sum(T.exp(all_scores * 2), axis=1))
+        return -loss, T.mean(element_logvar)
