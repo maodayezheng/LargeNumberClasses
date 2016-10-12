@@ -12,6 +12,7 @@ def sampler(_, num_classes, replace, p, size):
                             p=p,
                             size=size)
 
+
 class Sampler(object):
     def __init__(self, num_classes, num_samples,
                  distortion=1.0,
@@ -33,7 +34,8 @@ class Sampler(object):
         self.extra = extra
         self.distorted_freq = np.power(proposed_dist, distortion)
         self.distorted_freq = self.distorted_freq / np.sum(self.distorted_freq)
-        self.freq_embedding = theano.shared(self.distorted_freq.astype(theano.config.floatX), "freq_embeddings")
+        self.freq_embedding = theano.shared(
+            np.log(self.distorted_freq).astype(theano.config.floatX), "freq_embeddings")
         self.replace = replace
         # v = np.stack((np.arange(num_classes), self.distorted_freq))
         # self.sampler = rv_discrete(name="sampler", values=v)

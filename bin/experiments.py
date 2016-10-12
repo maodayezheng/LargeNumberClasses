@@ -15,10 +15,6 @@ def main():
     parser.add_argument("folder",
                         help="Folder where to load/save parameters and results",
                         type=str)
-    parser.add_argument("-ss", "--sample_size",
-                        help="How many samples to take from Q",
-                        type=int,
-                        default=250)
     parser.add_argument("-bs", "--batch_size",
                         help="Size of the batch",
                         type=int,
@@ -34,7 +30,7 @@ def main():
     parser.add_argument("-ed", "--embed_dim",
                         help="Dimensionality of the word embeddings",
                         type=int,
-                        default=100)
+                        default=128)
     parser.add_argument("-gd", "--gru_dim",
                         help="Dimensionality of the hidden state in the GRU",
                         type=int,
@@ -46,7 +42,7 @@ def main():
     parser.add_argument("-om", "--optim_method",
                         help="sgd or adam",
                         type=str,
-                        default="sga")
+                        default="sgd")
     parser.add_argument("-lrg", "--l_rate_gru",
                         help="Learning rate for the parameters of the GRU",
                         type=float,
@@ -57,12 +53,8 @@ def main():
                         default=0.02)
     parser.add_argument("-c", dest="check", action="store_true")
     parser.set_defaults(check=False)
-    parser.add_argument("-nr", dest="replace", action="store_false")
-    parser.set_defaults(replace=True)
-    parser.add_argument("-d", "--distortion",
-                        help="Distortion applied to the Unigram frequencies",
-                        type=float,
-                        default=1.0)
+    parser.add_argument("-oq", "--optimize_q", dest="optimize_q", action="store_true")
+    parser.set_defaults(optimize_q=False)
     parser.add_argument("-r", "--record",
                         help="Period on which to record the true LL",
                         type=int,

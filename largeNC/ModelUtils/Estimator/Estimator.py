@@ -8,8 +8,7 @@ class Estimator(object):
     def __init__(self, extra=0):
         self.extra = extra
 
-    def loss(self, h, targets, target_ids, target_qs,
-             samples, sample_ids, sample_qs, eps=1e-9):
+    def loss(self, h, targets, target_sub_ids, unique_embed, unique_ids, unique_qs, eps=1e-9):
         """
         Abstract method requires to be implement by sub classes
         :param h: NxD
