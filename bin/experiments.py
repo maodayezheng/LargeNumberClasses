@@ -57,6 +57,8 @@ def main():
                         default=0.02)
     parser.add_argument("-c", dest="check", action="store_true")
     parser.set_defaults(check=False)
+    parser.add_argument("-nr", dest="replace", action="store_false")
+    parser.set_defaults(replace=True)
     parser.add_argument("-d", "--distortion",
                         help="Distortion applied to the Unigram frequencies",
                         type=float,

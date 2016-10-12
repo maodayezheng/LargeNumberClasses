@@ -2,11 +2,21 @@ import theano
 import numpy as np
 # from scipy.stats import rv_discrete
 
+from functools import partial
+from multiprocessing import Pool
+
+
+def sampler(_, num_classes, replace, p, size):
+    return np.random.choice(np.arange(num_classes),
+                            replace=replace,
+                            p=p,
+                            size=size)
 
 class Sampler(object):
     def __init__(self, num_classes, num_samples,
                  distortion=1.0,
                  proposed_dist=None,
+                 replace=True,
                  extra=0):
         """
         The constructor of Sampler
@@ -24,6 +34,7 @@ class Sampler(object):
         self.distorted_freq = np.power(proposed_dist, distortion)
         self.distorted_freq = self.distorted_freq / np.sum(self.distorted_freq)
         self.freq_embedding = theano.shared(self.distorted_freq.astype(theano.config.floatX), "freq_embeddings")
+        self.replace = replace
         # v = np.stack((np.arange(num_classes), self.distorted_freq))
         # self.sampler = rv_discrete(name="sampler", values=v)
 
@@ -33,6 +44,20 @@ class Sampler(object):
         :return:
         """
         shape = (self.num_samples_, ) if shape is None else shape
-        return np.random.choice(np.arange(self.num_classes_), p=self.distorted_freq,
-                                size=shape).astype("int32")
-        # return self.sampler.rvs(size=(self.num_samples_ + self.extra, )).astype("int32")
+        if self.replace:
+            return np.random.choice(np.arange(self.num_classes_),
+                                    p=self.distorted_freq,
+                                    size=shape).astype("int32")
+        else:
+            if len(shape) == 1:
+                return np.random.choice(np.arange(self.num_classes_),
+                                        replace=False,
+                                        p=self.distorted_freq,
+                                        size=shape).astype("int32")
+            else:
+                pool = Pool(8)
+                func = partial(sampler, num_classes=self.num_classes_, replace=False,
+                               p=self.distorted_freq, size=shape[1:])
+                result = np.stack(pool.map(func, range(shape[0]))).astype("int32")
+                pool.close()
+                return result

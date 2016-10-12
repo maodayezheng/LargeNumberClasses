@@ -252,7 +252,7 @@ def make_ll_function(sampler, data, embedding_layer, gru, estimator, in_memory=T
 
 
 def training(estimator_name, folder, sample_size=250, batch_size=100,
-             epochs=10, max_len=70,
+             epochs=10, max_len=70, replace=True,
              embed_dim=100, gru_dim=100, lamb=0.0,
              l_rate_gru=0.05, l_rate_embed=0.05, l_decay=0.9,
              optim_method="sga", check=False,
@@ -343,6 +343,7 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
 
     num_classes = u.shape[0]
     sampler = Sampler(num_classes, sample_size,
+                      replace=replace,
                       proposed_dist=c,
                       distortion=distortion,
                       extra=estimator.extra)
@@ -381,22 +382,23 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
     print("Start training")
     start_time = time.time()
     many_samples = None
+    MS = 100000
     be = 1000
     for e in range(epochs):
-        if not check:
-            # Calculate exact LL
-            for i in range(0, (N // be) * be, be):
-                exact_ll_full[e] += ll_func(i, i + be)
-            exact_ll_full[e] /= N // be
-            print("Exact full LL for %d epoch: %.3e, Time: %.2f" % (e, exact_ll_full[e], time.time() - start_time))
-            # Calculate exact Test LL
-            if "full" in data_folder.lower():
-                for i in range(0, (NT // be) * be, be):
-                    test_ll_full[e] += ll_test_func(i, i + be)
-                test_ll_full[e] /= NT // be
-            else:
-                test_ll_full[e] = exact_ll_full[e]
-            print("Exact test LL for %d epoch: %.3e, Time: %.2f" % (e, test_ll_full[e], time.time() - start_time))
+        # if not check:
+        #     # Calculate exact LL
+        #     for i in range(0, (N // be) * be, be):
+        #         exact_ll_full[e] += ll_func(i, i + be)
+        #     exact_ll_full[e] /= N // be
+        #     print("Exact full LL for %d epoch: %.3e, Time: %.2f" % (e, exact_ll_full[e], time.time() - start_time))
+        #     # Calculate exact Test LL
+        #     if "full" in data_folder.lower():
+        #         for i in range(0, (NT // be) * be, be):
+        #             test_ll_full[e] += ll_test_func(i, i + be)
+        #         test_ll_full[e] /= NT // be
+        #     else:
+        #         test_ll_full[e] = exact_ll_full[e]
+        #     print("Exact test LL for %d epoch: %.3e, Time: %.2f" % (e, test_ll_full[e], time.time() - start_time))
         for i in range(0, N, batch_size):
             if iter % record == 0:
                 if iter_ll == exact_ll.shape[0]:
@@ -412,13 +414,15 @@ def training(estimator_name, folder, sample_size=250, batch_size=100,
                 iter_ll += 1
             if iter == loss.shape[0]:
                 loss = np.concatenate((loss, np.zeros((D1, ), dtype=theano.config.floatX)), axis=0)
-            if iter % 100 == 0:
-                many_samples = sampler.draw_sample((100, sampler.num_samples_))
+            if iter % MS == 0:
+                many_samples = sampler.draw_sample((MS, sampler.num_samples_))
+                print(many_samples.shape, many_samples.dtype)
+            current_samples = many_samples[iter % MS]
             j = i + batch_size if (i + batch_size) < N else N
             if in_memory:
-                loss[iter] = train_func(i, j, many_samples[iter % 100])
+                loss[iter] = train_func(i, j, current_samples)
             else:
-                loss[iter] = train_func(data[i: j], many_samples[iter % 100])
+                loss[iter] = train_func(data[i: j], current_samples)
             # print(loss[iter])
             iter += 1
         print("Epoch finished")
