@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import json
 import glob, os
 
 
@@ -21,5 +22,7 @@ for a in alpha:
     plt.title("Training on 100,000 sentences with distortion factor ("+a+")")
     plt.show()
 
-
+with open("ProcessedData/frequency.txt", "r") as f:
+        d = json.loads(f.read())
+        print(len(d))
 

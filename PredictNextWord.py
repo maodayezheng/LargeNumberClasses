@@ -22,7 +22,6 @@ def training(params):
 
     @Param params: A dictionary of training hyper parameters
     """
-
     # Get training hyper parameters
     sampler_type = params["sampler_type"]
     estimator_type = params["estimator_type"]
@@ -111,7 +110,7 @@ def training(params):
     exact_log_like = estimator.log_likelihood(targets, target_states, embedding)
 
     # Training Loss
-    objective = loss + cell.l2_regular() * lamb
+    objective = loss
     l_rate = tf.train.exponential_decay(l_rate, decay, 1, 0.9)
     update = tf.train.GradientDescentOptimizer(l_rate).minimize(objective)
 
